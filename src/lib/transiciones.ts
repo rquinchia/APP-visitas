@@ -9,6 +9,8 @@ export interface Transicion {
   requiereFechaInicio?: boolean
   /** Antes de aplicar esta transición debe mostrarse la vista previa del plan (ver PlanVistaPrevia). */
   requierePlanPreview?: boolean
+  /** Antes de aplicar esta transición debe mostrarse el checklist de cierre (ver Cierre). */
+  requiereCierre?: boolean
 }
 
 export const TRANSICIONES: Partial<Record<EstadoVisita, Transicion[]>> = {
@@ -21,7 +23,7 @@ export const TRANSICIONES: Partial<Record<EstadoVisita, Transicion[]>> = {
   AJUSTES_SOLICITADOS: [{ destino: 'EN_REVISION', etiqueta: 'Volver a revisión', requierePlanPreview: true }],
   APROBADO: [{ destino: 'LISTO_PARA_INICIAR', etiqueta: 'Marcar listo para iniciar' }],
   LISTO_PARA_INICIAR: [{ destino: 'VISITA_ACTIVA', etiqueta: 'INICIAR VISITA', requiereFechaInicio: true }],
-  VISITA_ACTIVA: [{ destino: 'VISITA_TERMINADA', etiqueta: 'TERMINAR VISITA' }],
+  VISITA_ACTIVA: [{ destino: 'VISITA_TERMINADA', etiqueta: 'TERMINAR VISITA', requiereCierre: true }],
   VISITA_TERMINADA: [{ destino: 'SEGUIMIENTO_PENDIENTES', etiqueta: 'Pasar a seguimiento de pendientes' }],
   SEGUIMIENTO_PENDIENTES: [{ destino: 'CERRADO', etiqueta: 'Cerrar visita' }],
 }

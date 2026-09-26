@@ -164,6 +164,11 @@ export async function listarFotosPorEntidad(entidadId: string): Promise<Foto[]> 
   return db.getAllFromIndex('fotos', 'entidadId', entidadId)
 }
 
+export async function listarFotosPorVisita(visitaId: string): Promise<Foto[]> {
+  const db = await getDB()
+  return db.getAllFromIndex('fotos', 'visitaId', visitaId)
+}
+
 export async function eliminarFoto(id: string): Promise<void> {
   const db = await getDB()
   await db.delete('fotos', id)

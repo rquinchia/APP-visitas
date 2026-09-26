@@ -131,16 +131,30 @@ export default function VisitaDetalle() {
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="mb-2 text-sm font-medium text-slate-700">Ciclo de vida</p>
           <div className="flex flex-col gap-2">
-            {transicionesDisponibles.map((t) =>
-              t.requierePlanPreview ? (
-                <Link
-                  key={t.destino}
-                  to={`/visitas/${visita.id}/plan/vista-previa?destino=${t.destino}`}
-                  className="rounded-lg bg-accent py-2.5 text-center text-sm font-semibold text-white"
-                >
-                  {t.etiqueta}
-                </Link>
-              ) : (
+            {transicionesDisponibles.map((t) => {
+              if (t.requierePlanPreview) {
+                return (
+                  <Link
+                    key={t.destino}
+                    to={`/visitas/${visita.id}/plan/vista-previa?destino=${t.destino}`}
+                    className="rounded-lg bg-accent py-2.5 text-center text-sm font-semibold text-white"
+                  >
+                    {t.etiqueta}
+                  </Link>
+                )
+              }
+              if (t.requiereCierre) {
+                return (
+                  <Link
+                    key={t.destino}
+                    to={`/visitas/${visita.id}/cierre`}
+                    className="rounded-lg bg-accent py-2.5 text-center text-sm font-semibold text-white"
+                  >
+                    {t.etiqueta}
+                  </Link>
+                )
+              }
+              return (
                 <button
                   key={t.destino}
                   onClick={() => onTransicion(t)}
@@ -148,8 +162,8 @@ export default function VisitaDetalle() {
                 >
                   {t.etiqueta}
                 </button>
-              ),
-            )}
+              )
+            })}
           </div>
         </div>
       )}

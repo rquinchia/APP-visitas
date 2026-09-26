@@ -1,4 +1,4 @@
-import type { Actividad, Pendiente, Visita } from '../types'
+import type { Actividad, Foto, Pendiente, Visita } from '../types'
 import { FECHA_POR_DEFECTO, RESPONSABLE_POR_DEFECTO } from '../types'
 import { calcularAvance } from './progreso'
 
@@ -133,6 +133,103 @@ export function generarReporteOutlook(visita: Visita, actividadesDia: Actividad[
       lineas.push(`${p.id.slice(0, 8)} | ${p.prioridad} | ${p.descripcion} | ${p.responsable} | ${p.fechaCompromiso} | ${p.estado}`)
     })
   }
+
+  return lineas.join('\n')
+}
+
+// --- Cierre de visita: informes consolidados de toda la visita (todos los días) ---
+
+export function generarAsuntoInformeFinal(visita: Visita, todasActividades: Actividad[]): string {
+  const avance = calcularAvance(todasActividades)
+  return `${visita.planta || 'Planta'} | Informe final de visita | Avance ${avance.porcentaje}%`
+}
+
+export function generarInformeFinalOutlook(
+  visita: Visita,
+  todasActividades: Actividad[],
+  todasPendientes: Pendiente[],
+  fotos: Foto[],
+): string {
+  const avance = calcularAvance(todasActividades)
+  const ejecutadas = todasActividades.filter((a) => a.estado === 'COMPLETADA' || a.estado === 'PARCIAL')
+  const noEjecutadas = todasActividades.filter((a) => a.estado === 'PENDIENTE' || a.estado === 'EN_PROGRESO' || a.estado === 'BLOQUEADA')
+  const formacion = todasActividades.filter((a) => a.tipo.toLowerCase().includes('formaci'))
+  const abiertosVisita = abiertos(todasPendientes)
+  const cerrados = todasPendientes.filter((p) => p.estado === 'CERRADO' || p.estado === 'CANCELADO')
+
+  const lineas: string[] = []
+  lineas.push('Objetivo', visita.objetivo, '')
+
+  lineas.push('Resultado general')
+  lineas.push(
+    `- Avance final: ${avance.porcentaje}% (${avance.completadas} completadas, ${avance.parciales} parciales, ${avance.pendientes} pendientes, ${avance.bloqueadas} bloqueadas)`,
+  )
+  lineas.push('')
+
+  lineas.push('Actividades ejecutadas')
+  if (ejecutadas.length === 0) lineas.push('- Ninguna actividad quedó completada o parcial.')
+  else ejecutadas.forEach((a) => lineas.push(`- Día ${a.dia}: ${a.actividad}${a.observacion ? ` — ${a.observacion}` : ''}`))
+  lineas.push('')
+
+  if (noEjecutadas.length > 0) {
+    lineas.push('Actividades no ejecutadas / bloqueadas')
+    noEjecutadas.forEach((a) => lineas.push(`- Día ${a.dia}: ${a.actividad} (${a.estado})`))
+    lineas.push('')
+  }
+
+  lineas.push('Formación realizada')
+  if (formacion.length === 0) lineas.push('- Sin actividades de formación registradas.')
+  else formacion.forEach((a) => lineas.push(`- Día ${a.dia}: ${a.actividad}${a.observacion ? ` — ${a.observacion}` : ''}`))
+  lineas.push('')
+
+  lineas.push('Hallazgos y acciones')
+  lineas.push(`- Cerrados/cancelados: ${cerrados.length}`)
+  lineas.push(`- Abiertos (pasan a seguimiento post-visita): ${abiertosVisita.length}`)
+  lineas.push('')
+
+  lineas.push('Evidencias')
+  lineas.push(`- ${fotos.length} fotografías registradas durante la visita.`)
+  lineas.push('')
+
+  lineas.push('Pendientes en seguimiento')
+  if (abiertosVisita.length === 0) lineas.push('- No quedan pendientes abiertos.')
+  else {
+    lineas.push('ID | Prioridad | Pendiente | Responsable | Fecha | Estado')
+    abiertosVisita.forEach((p) => {
+      lineas.push(`${p.id.slice(0, 8)} | ${p.prioridad} | ${p.descripcion} | ${p.responsable} | ${p.fechaCompromiso} | ${p.estado}`)
+    })
+  }
+
+  return lineas.join('\n')
+}
+
+export function generarResumenFinalWhatsApp(visita: Visita, todasActividades: Actividad[], todasPendientes: Pendiente[]): string {
+  const avance = calcularAvance(todasActividades)
+  const abiertosVisita = abiertos(todasPendientes)
+  const formacion = todasActividades.filter((a) => a.tipo.toLowerCase().includes('formaci') && (a.estado === 'COMPLETADA' || a.estado === 'PARCIAL'))
+  const ejecutadas = todasActividades.filter((a) => a.estado === 'COMPLETADA' || a.estado === 'PARCIAL')
+
+  const sinDueño = abiertosVisita.some((p) => p.responsable === RESPONSABLE_POR_DEFECTO || p.fechaCompromiso === FECHA_POR_DEFECTO)
+
+  const lineas = [
+    `📍 ${visita.planta || 'Planta'} | Visita finalizada`,
+    `📊 Avance final: ${avance.porcentaje}%`,
+    '',
+    '✅ EJECUTADO',
+    truncar(ejecutadas.length === 0 ? 'Sin actividades cerradas.' : ejecutadas.map((a) => a.actividad).join(', '), 220),
+    '',
+    '👥 FORMACIÓN',
+    truncar(formacion.length === 0 ? 'Sin formación completada.' : formacion.map((a) => a.actividad).join(', '), 160),
+    '',
+    '📌 PENDIENTES EN SEGUIMIENTO',
+    abiertosVisita.length === 0 ? 'No quedan pendientes abiertos.' : `${abiertosVisita.length} pendientes pasan a seguimiento post-visita.`,
+  ]
+
+  if (sinDueño) {
+    lineas.push('', '⚠️ Se solicita asignar responsable y fecha compromiso a los pendientes indicados.')
+  }
+
+  lineas.push('', '📧 El informe final ampliado y las evidencias se incluyen en el correo enviado.')
 
   return lineas.join('\n')
 }

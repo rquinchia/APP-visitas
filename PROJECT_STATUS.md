@@ -57,7 +57,11 @@ Windows.
     de compartir (Web Share API) o copiar.
 11. [x] Reporte Outlook: asunto con el formato pedido, cuerpo con las 8 secciones y tabla final
     ID/Prioridad/Pendiente/Responsable/Fecha/Estado. Copiar o abrir borrador de correo (`mailto:`).
-12. [ ] Cierre de visita + seguimiento post-visita.
+12. [x] Cierre de visita: al pulsar "TERMINAR VISITA" se abre un checklist de cierre (actividades
+    sin completar, formación realizada, evidencias, acciones cerradas/abiertas, historial de
+    actividades y de cambios del plan) y los informes finales consolidados (WhatsApp y Outlook,
+    con toda la visita, no solo el último día) antes de confirmar. Los pendientes abiertos no se
+    cierran solos: pasan a seguimiento post-visita (siguiente estado del ciclo de vida).
 13. [ ] Backup/restore (exportar/importar proyecto en JSON portátil, con fotos).
 14. [ ] Pulido visual y funciones secundarias.
 

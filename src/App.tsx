@@ -11,6 +11,7 @@ import Pendientes from './pages/Pendientes'
 import PendienteForm from './pages/PendienteForm'
 import RegistroDiario from './pages/RegistroDiario'
 import Reporte from './pages/Reporte'
+import Cierre from './pages/Cierre'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="visitas/:id" element={<VisitaDetalle />} />
           <Route path="visitas/:id/hoy" element={<RegistroDiario />} />
           <Route path="visitas/:id/reporte" element={<Reporte />} />
+          <Route path="visitas/:id/cierre" element={<Cierre />} />
           <Route path="visitas/:id/plan" element={<Plan />} />
           <Route path="visitas/:id/plan/vista-previa" element={<PlanVistaPrevia />} />
           <Route path="visitas/:id/plan/nueva" element={<ActividadForm />} />
