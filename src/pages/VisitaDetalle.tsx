@@ -1,36 +1,19 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { guardarVisita, obtenerVisita, registrarCambioHistorial } from '../db'
-import { generarId, ahoraISO } from '../lib/id'
-import type { EstadoVisita, Visita } from '../types'
-import { ETIQUETA_ESTADO, TIPOS_VISITA } from '../types'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { guardarVisita, listarActividadesPorVisita, obtenerVisita } from '../db'
+import { ahoraISO } from '../lib/id'
+import type { Actividad, Visita } from '../types'
+import { TIPOS_VISITA } from '../types'
 import EstadoBadge from '../components/EstadoBadge'
-
-interface Transicion {
-  destino: EstadoVisita
-  etiqueta: string
-  requiereFechaInicio?: boolean
-}
-
-const TRANSICIONES: Partial<Record<EstadoVisita, Transicion[]>> = {
-  BORRADOR: [{ destino: 'EN_REVISION', etiqueta: 'Enviar a revisión' }],
-  EN_REVISION: [{ destino: 'ENVIADO_APROBACION', etiqueta: 'Enviar para aprobación' }],
-  ENVIADO_APROBACION: [
-    { destino: 'APROBADO', etiqueta: 'Aprobar' },
-    { destino: 'AJUSTES_SOLICITADOS', etiqueta: 'Solicitar ajustes' },
-  ],
-  AJUSTES_SOLICITADOS: [{ destino: 'EN_REVISION', etiqueta: 'Volver a revisión' }],
-  APROBADO: [{ destino: 'LISTO_PARA_INICIAR', etiqueta: 'Marcar listo para iniciar' }],
-  LISTO_PARA_INICIAR: [{ destino: 'VISITA_ACTIVA', etiqueta: 'INICIAR VISITA', requiereFechaInicio: true }],
-  VISITA_ACTIVA: [{ destino: 'VISITA_TERMINADA', etiqueta: 'TERMINAR VISITA' }],
-  VISITA_TERMINADA: [{ destino: 'SEGUIMIENTO_PENDIENTES', etiqueta: 'Pasar a seguimiento de pendientes' }],
-  SEGUIMIENTO_PENDIENTES: [{ destino: 'CERRADO', etiqueta: 'Cerrar visita' }],
-}
+import BarraProgreso from '../components/BarraProgreso'
+import { calcularAvance } from '../lib/progreso'
+import { TRANSICIONES, aplicarTransicionEstado, type Transicion } from '../lib/transiciones'
 
 export default function VisitaDetalle() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [visita, setVisita] = useState<Visita | null | undefined>(undefined)
+  const [actividades, setActividades] = useState<Actividad[]>([])
   const [fechaInicio, setFechaInicio] = useState('')
 
   useEffect(() => {
@@ -39,6 +22,7 @@ export default function VisitaDetalle() {
       setVisita(v ?? null)
       setFechaInicio(v?.fechaInicio ?? '')
     })
+    listarActividadesPorVisita(id).then(setActividades)
   }, [id])
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
@@ -51,30 +35,14 @@ export default function VisitaDetalle() {
     setVisita(actualizada)
   }
 
-  async function aplicarTransicion(t: Transicion) {
+  async function onTransicion(t: Transicion) {
     if (!visita) return
-    if (t.requiereFechaInicio && !visita.fechaInicio) {
-      alert('Antes de iniciar la visita, guarda la fecha de inicio.')
-      return
-    }
-    const confirmado = window.confirm(`¿Confirmas: "${t.etiqueta}"?\n\nEstado actual: ${ETIQUETA_ESTADO[visita.estado]}\nNuevo estado: ${ETIQUETA_ESTADO[t.destino]}`)
-    if (!confirmado) return
-
-    const motivo = window.prompt('Motivo del cambio (opcional):', '') ?? ''
-    const actualizada: Visita = { ...visita, estado: t.destino, actualizadoEn: ahoraISO() }
-    await guardarVisita(actualizada)
-    await registrarCambioHistorial({
-      id: generarId(),
-      visitaId: visita.id,
-      version: visita.version,
-      fecha: ahoraISO(),
-      cambio: `Estado: ${ETIQUETA_ESTADO[visita.estado]} → ${ETIQUETA_ESTADO[t.destino]}`,
-      motivo,
-    })
-    setVisita(actualizada)
+    const resultado = await aplicarTransicionEstado(visita, t)
+    if (resultado) setVisita(resultado)
   }
 
   const transicionesDisponibles = TRANSICIONES[visita.estado] ?? []
+  const avance = calcularAvance(actividades)
 
   return (
     <div className="flex flex-col gap-4">
@@ -120,25 +88,50 @@ export default function VisitaDetalle() {
         </div>
       </div>
 
+      <Link to={`/visitas/${visita.id}/plan`} className="block rounded-xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-slate-700">Plan de actividades</p>
+          <span className="text-sm text-accent">Ver plan →</span>
+        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          {actividades.length === 0 ? 'Sin actividades todavía' : `${actividades.length} actividades · versión ${visita.version}`}
+        </p>
+        {actividades.length > 0 && (
+          <div className="mt-2">
+            <BarraProgreso porcentaje={avance.porcentaje} />
+          </div>
+        )}
+      </Link>
+
       {transicionesDisponibles.length > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="mb-2 text-sm font-medium text-slate-700">Ciclo de vida</p>
           <div className="flex flex-col gap-2">
-            {transicionesDisponibles.map((t) => (
-              <button
-                key={t.destino}
-                onClick={() => aplicarTransicion(t)}
-                className="rounded-lg bg-accent py-2.5 text-sm font-semibold text-white"
-              >
-                {t.etiqueta}
-              </button>
-            ))}
+            {transicionesDisponibles.map((t) =>
+              t.requierePlanPreview ? (
+                <Link
+                  key={t.destino}
+                  to={`/visitas/${visita.id}/plan/vista-previa?destino=${t.destino}`}
+                  className="rounded-lg bg-accent py-2.5 text-center text-sm font-semibold text-white"
+                >
+                  {t.etiqueta}
+                </Link>
+              ) : (
+                <button
+                  key={t.destino}
+                  onClick={() => onTransicion(t)}
+                  className="rounded-lg bg-accent py-2.5 text-sm font-semibold text-white"
+                >
+                  {t.etiqueta}
+                </button>
+              ),
+            )}
           </div>
         </div>
       )}
 
       <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
-        Plan de actividades, registro diario, fotos y hallazgos: próximo módulo.
+        Registro diario, fotos y hallazgos: próximo módulo.
       </div>
     </div>
   )

@@ -4,6 +4,9 @@ import Dashboard from './pages/Dashboard'
 import Visitas from './pages/Visitas'
 import NuevaVisita from './pages/NuevaVisita'
 import VisitaDetalle from './pages/VisitaDetalle'
+import Plan from './pages/Plan'
+import ActividadForm from './pages/ActividadForm'
+import PlanVistaPrevia from './pages/PlanVistaPrevia'
 import Pendientes from './pages/Pendientes'
 
 export default function App() {
@@ -15,6 +18,10 @@ export default function App() {
           <Route path="visitas" element={<Visitas />} />
           <Route path="visitas/nueva" element={<NuevaVisita />} />
           <Route path="visitas/:id" element={<VisitaDetalle />} />
+          <Route path="visitas/:id/plan" element={<Plan />} />
+          <Route path="visitas/:id/plan/vista-previa" element={<PlanVistaPrevia />} />
+          <Route path="visitas/:id/plan/nueva" element={<ActividadForm />} />
+          <Route path="visitas/:id/plan/:actividadId/editar" element={<ActividadForm />} />
           <Route path="pendientes" element={<Pendientes />} />
         </Route>
       </Routes>

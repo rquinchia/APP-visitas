@@ -32,8 +32,13 @@ Windows.
 4. [x] Gestión de visitas: crear (PA/SC/FL con objetivo/duración precargados), listar, ver
    detalle, editar fecha de inicio y recorrer el ciclo de vida completo (borrador → cerrado)
    con confirmación y registro en historial en cada paso.
-5. [ ] Plan editable/reordenable (actividades por día, historial de versiones) — sigue.
-6. [ ] Activación de visita ("Iniciar visita").
+5. [x] Plan editable/reordenable: crear, editar, eliminar, duplicar, reordenar (▲▼ dentro del
+   día), reprogramar (cambiar de día), marcar no aplicable, actividad emergente. Vista previa
+   obligatoria (editar/confirmar/compartir) antes de "Enviar a revisión" o "Enviar para
+   aprobación". Historial de versiones: tras la aprobación, cualquier cambio exige motivo y
+   crea una nueva versión (nunca sobrescribe en silencio).
+6. [ ] Activación de visita ("Iniciar visita") — el botón existe en el ciclo de vida; falta la
+   experiencia de "hoy" (checklist del día) que se activa al iniciar.
 7. [ ] Registro diario (checklist, avance, formación, hallazgos, pendientes).
 8. [ ] Fotos (múltiples por actividad/hallazgo/acción/evidencia).
 9. [ ] Hallazgos / pendientes (módulo independiente con prioridades y estados).
@@ -65,10 +70,29 @@ Windows.
   inicio) y las 10 etapas del ciclo de vida con confirmación explícita y motivo registrado en
   el historial antes de cada cambio de estado.
 
+## Completado — módulo de Plan (2026-09-26, sesión 2)
+
+- `src/pages/Plan.tsx`: listado por día con todas las acciones (crear/editar/duplicar/eliminar/
+  reordenar/cambiar estado/actividad emergente).
+- `src/pages/ActividadForm.tsx`: alta y edición con los campos mínimos definidos (día, orden,
+  actividad, objetivo, tipo, equipo/proceso, evidencia, criterio de cumplimiento, estado,
+  observación) y recálculo automático de orden al reprogramar de día.
+- `src/pages/PlanVistaPrevia.tsx`: vista previa de solo lectura con Editar/Confirmar/Compartir
+  (Web Share API con copiar al portapapeles como respaldo), enlazada desde las transiciones
+  "Enviar a revisión" y "Enviar para aprobación".
+- `src/lib/historial.ts` y `src/lib/transiciones.ts`: lógica compartida de versionado e
+  historial (`registrarCambioPlan`) y de cambios de estado (`aplicarTransicionEstado`),
+  reutilizada entre `VisitaDetalle` y `PlanVistaPrevia`.
+- Verificado con `npm run typecheck`, `npm run build` y arrancando el servidor de desarrollo
+  (`npm run dev`) con una petición HTTP real — sin errores. **Nota:** no se hizo una prueba de
+  clic a clic en navegador real (no hay herramienta de automatización de navegador en este
+  entorno); la próxima vez que el usuario abra la app conviene revisar el flujo completo una
+  vez en pantalla.
+
 ## Pendiente inmediato
 
-- Construir el módulo de Plan editable/reordenable por día (módulo 5) — siguiente paso.
 - Construir el módulo de Pendientes/Hallazgos (hoy solo hay una pantalla "próximamente").
+- Construir el registro diario (checklist del día activo) que se habilita al pulsar "INICIAR VISITA".
 - Definir con datos reales de los manuales las plantillas de actividades sugeridas por visita
   (PA/SC/FL), marcando cada dato como `[FABRICANTE]`, `[BUENA PRÁCTICA]` o `[VALIDAR EN PLANTA]`.
 - Generar íconos reales de la app (actualmente placeholders geométricos) antes de publicar/instalar

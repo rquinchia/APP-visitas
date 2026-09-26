@@ -102,6 +102,11 @@ export async function listarActividadesPorVisita(visitaId: string): Promise<Acti
   return actividades.sort((a, b) => a.dia - b.dia || a.orden - b.orden)
 }
 
+export async function obtenerActividad(id: string): Promise<Actividad | undefined> {
+  const db = await getDB()
+  return db.get('actividades', id)
+}
+
 export async function guardarActividad(actividad: Actividad): Promise<void> {
   const db = await getDB()
   await db.put('actividades', actividad)

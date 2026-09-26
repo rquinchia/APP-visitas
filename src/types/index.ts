@@ -81,6 +81,18 @@ export const ETIQUETA_ESTADO_ACTIVIDAD: Record<EstadoActividad, string> = {
   NO_APLICA: 'No aplica',
 }
 
+// Sugerencias de tipo de actividad (lista abierta, el usuario puede escribir otro valor).
+export const TIPOS_ACTIVIDAD_SUGERIDOS = [
+  'Formación',
+  'Evaluación',
+  'Práctica',
+  'Ajuste',
+  'Prueba',
+  'Inspección',
+  'Mantenimiento',
+  'Otro',
+]
+
 export interface Actividad {
   id: string
   visitaId: string
