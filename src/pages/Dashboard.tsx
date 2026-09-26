@@ -59,14 +59,14 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-3">
+      <Link to="/pendientes" className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-3 active:bg-slate-50">
         <ResumenCelda etiqueta="P1 críticos" valor={rp.p1} alerta={rp.p1 > 0} />
         <ResumenCelda etiqueta="P2 altos" valor={rp.p2} alerta={rp.p2 > 0} />
         <ResumenCelda etiqueta="Abiertos" valor={rp.abiertos} />
         <ResumenCelda etiqueta="Sin responsable" valor={rp.sinResponsable} alerta={rp.sinResponsable > 0} />
         <ResumenCelda etiqueta="Sin fecha" valor={rp.sinFecha} alerta={rp.sinFecha > 0} />
         <ResumenCelda etiqueta="Vencidos" valor={rp.vencidos} alerta={rp.vencidos > 0} />
-      </section>
+      </Link>
 
       {activas.length === 0 && (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center">

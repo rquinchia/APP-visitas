@@ -8,6 +8,7 @@ import Plan from './pages/Plan'
 import ActividadForm from './pages/ActividadForm'
 import PlanVistaPrevia from './pages/PlanVistaPrevia'
 import Pendientes from './pages/Pendientes'
+import PendienteForm from './pages/PendienteForm'
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
           <Route path="visitas/:id/plan/nueva" element={<ActividadForm />} />
           <Route path="visitas/:id/plan/:actividadId/editar" element={<ActividadForm />} />
           <Route path="pendientes" element={<Pendientes />} />
+          <Route path="pendientes/nuevo" element={<PendienteForm />} />
+          <Route path="pendientes/:pendienteId/editar" element={<PendienteForm />} />
         </Route>
       </Routes>
     </HashRouter>

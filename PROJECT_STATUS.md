@@ -40,8 +40,13 @@ Windows.
 6. [ ] Activación de visita ("Iniciar visita") — el botón existe en el ciclo de vida; falta la
    experiencia de "hoy" (checklist del día) que se activa al iniciar.
 7. [ ] Registro diario (checklist, avance, formación, hallazgos, pendientes).
-8. [ ] Fotos (múltiples por actividad/hallazgo/acción/evidencia).
-9. [ ] Hallazgos / pendientes (módulo independiente con prioridades y estados).
+8. [x] Fotos: componente `FotosPicker` reutilizable (múltiples fotos por registro, cámara o
+   galería en iPhone vía `capture="environment"`), integrado en Pendientes; falta conectarlo
+   también a las actividades del registro diario (módulo 7).
+9. [x] Hallazgos / pendientes: módulo independiente completo (crear/editar, categorías,
+   prioridades P1–P4, estados, responsable/fecha con "POR ASIGNAR"/"POR DEFINIR" por defecto,
+   fotos de evidencia y evidencia de cierre separadas, filtros por estado/prioridad, vista
+   global y filtrada por visita).
 10. [ ] Reporte WhatsApp (Web Share API + copiar al portapapeles).
 11. [ ] Reporte Outlook (copiar/pegar + `mailto:`).
 12. [ ] Cierre de visita + seguimiento post-visita.

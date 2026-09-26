@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { guardarVisita, listarActividadesPorVisita, obtenerVisita } from '../db'
+import { guardarVisita, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { ahoraISO } from '../lib/id'
-import type { Actividad, Visita } from '../types'
+import type { Actividad, Pendiente, Visita } from '../types'
 import { TIPOS_VISITA } from '../types'
 import EstadoBadge from '../components/EstadoBadge'
 import BarraProgreso from '../components/BarraProgreso'
@@ -14,6 +14,7 @@ export default function VisitaDetalle() {
   const navigate = useNavigate()
   const [visita, setVisita] = useState<Visita | null | undefined>(undefined)
   const [actividades, setActividades] = useState<Actividad[]>([])
+  const [pendientes, setPendientes] = useState<Pendiente[]>([])
   const [fechaInicio, setFechaInicio] = useState('')
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function VisitaDetalle() {
       setFechaInicio(v?.fechaInicio ?? '')
     })
     listarActividadesPorVisita(id).then(setActividades)
+    listarPendientesPorVisita(id).then(setPendientes)
   }, [id])
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
@@ -130,8 +132,20 @@ export default function VisitaDetalle() {
         </div>
       )}
 
+      <Link to={`/pendientes?visitaId=${visita.id}`} className="block rounded-xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-slate-700">Hallazgos y pendientes</p>
+          <span className="text-sm text-accent">Ver todos →</span>
+        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          {pendientes.length === 0
+            ? 'Sin pendientes registrados'
+            : `${pendientes.length} en total · ${pendientes.filter((p) => p.estado !== 'CERRADO' && p.estado !== 'CANCELADO').length} abiertos`}
+        </p>
+      </Link>
+
       <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
-        Registro diario, fotos y hallazgos: próximo módulo.
+        Registro diario y reportes (WhatsApp/Outlook) y cierre: próximo módulo.
       </div>
     </div>
   )

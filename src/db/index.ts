@@ -129,6 +129,11 @@ export async function listarTodosPendientes(): Promise<Pendiente[]> {
   return db.getAll('pendientes')
 }
 
+export async function obtenerPendiente(id: string): Promise<Pendiente | undefined> {
+  const db = await getDB()
+  return db.get('pendientes', id)
+}
+
 export async function guardarPendiente(pendiente: Pendiente): Promise<void> {
   const db = await getDB()
   await db.put('pendientes', pendiente)

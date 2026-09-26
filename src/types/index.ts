@@ -153,6 +153,30 @@ export type CategoriaPendiente =
   | 'Proceso'
   | 'Otro'
 
+export const CATEGORIAS_PENDIENTE: CategoriaPendiente[] = [
+  'Mantenimiento',
+  'Reparación',
+  'Repuestos',
+  'Herramientas',
+  'Seguridad',
+  'Calidad',
+  'Mejora',
+  'Capacitación',
+  'Documentación',
+  'Proceso',
+  'Otro',
+]
+
+export const PRIORIDADES_PENDIENTE: PrioridadPendiente[] = ['P1', 'P2', 'P3', 'P4']
+export const ESTADOS_PENDIENTE: EstadoPendiente[] = [
+  'ABIERTO',
+  'RESPONSABLE_PENDIENTE',
+  'EN_PROCESO',
+  'EN_ESPERA',
+  'CERRADO',
+  'CANCELADO',
+]
+
 export const RESPONSABLE_POR_DEFECTO = 'POR ASIGNAR'
 export const FECHA_POR_DEFECTO = 'POR DEFINIR'
 
@@ -184,5 +208,7 @@ export interface Foto {
   entidadId: string
   blob: Blob
   nombreArchivo: string
+  /** Ej. "Evidencia de cierre" para distinguir fotos de apertura vs. cierre de un pendiente. */
+  etiqueta?: string
   creadoEn: string
 }
