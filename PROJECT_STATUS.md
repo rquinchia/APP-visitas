@@ -32,6 +32,23 @@ actualizó `src/pages/Backup.tsx` con instrucciones claras de este flujo dentro 
 autorizarlo explícitamente — quedaría como una capa aparte sin rehacer el resto de la app (tal
 como se definió desde el inicio en CLAUDE.md).
 
+**Configuración probada y funcionando de punta a punta (2026-09-26)**:
+- OneDrive corporativo (`ruben.quinchia@turia-gbs.com`) conectado en la PC, con sincronización
+  selectiva activada para que **solo** la carpeta `Visitas App` se descargue localmente (el resto
+  del OneDrive corporativo — Cassettes BA/FL, Trefiladora China, etc. — queda solo en la nube,
+  sin pesar en el equipo). Configurado desde Configuración de OneDrive → Cuenta → Seleccionar
+  carpetas.
+- En el iPhone: el dispositivo tiene además una cuenta de OneDrive **personal**, distinta de la
+  corporativa — por eso "Compartir → Guardar en Archivos" mostraba el OneDrive equivocado (sin la
+  carpeta `Visitas App`). La ruta que sí funciona de forma confiable: en la app Visitas usar
+  **"Descargar respaldo"** (se guarda solo, sin preguntar, típicamente en Archivos/Descargas del
+  propio iPhone) y luego, desde la **app de OneDrive corporativa** (abierta directamente, no vía
+  el share sheet), usar su botón **"+" → Cargar archivo** para subirlo a `Visitas App`. Evita por
+  completo la ambigüedad de cuentas del share sheet de iOS.
+- Probado end-to-end: actividad creada en el iPhone → exportada → subida a OneDrive vía la app de
+  OneDrive → sincronizada a la PC → importada con "Combinar con lo actual" → visible
+  correctamente en la PC. Confirmado por el usuario.
+
 ## Pulido visual + confiabilidad offline (2026-09-26, sesión 3)
 
 - **Indicador de conexión + verificación de actualización** (`src/components/EstadoApp.tsx`,
