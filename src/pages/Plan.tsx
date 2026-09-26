@@ -76,13 +76,44 @@ export default function Plan() {
     const delDia = actividades.filter((a) => a.dia === actividad.dia).sort((a, b) => a.orden - b.orden)
     const idx = delDia.findIndex((a) => a.id === actividad.id)
     const vecino = delDia[idx + direccion]
-    if (!vecino) return
-    const actualizada = await registrarCambioPlan(visita, `Actividad reordenada (día ${actividad.dia}): ${actividad.actividad}`)
+
+    if (vecino) {
+      const actualizada = await registrarCambioPlan(visita, `Actividad reordenada (día ${actividad.dia}): ${actividad.actividad}`)
+      if (!actualizada) return
+      setVisita(actualizada)
+      const ordenOriginal = actividad.orden
+      await guardarActividad({ ...actividad, orden: vecino.orden, actualizadoEn: ahoraISO() })
+      await guardarActividad({ ...vecino, orden: ordenOriginal, actualizadoEn: ahoraISO() })
+      await refrescar(visita.id)
+      return
+    }
+
+    // Está en el borde del día: cruzar al día anterior/siguiente en vez de quedarse quieto.
+    const nuevoDia = actividad.dia + direccion
+    if (nuevoDia < 1 || nuevoDia > visita.duracionDias) return
+
+    const actualizada = await registrarCambioPlan(
+      visita,
+      `Actividad movida del día ${actividad.dia} al día ${nuevoDia}: ${actividad.actividad}`,
+    )
     if (!actualizada) return
     setVisita(actualizada)
-    const ordenOriginal = actividad.orden
-    await guardarActividad({ ...actividad, orden: vecino.orden, actualizadoEn: ahoraISO() })
-    await guardarActividad({ ...vecino, orden: ordenOriginal, actualizadoEn: ahoraISO() })
+
+    const ahora = ahoraISO()
+    const delDiaDestino = actividades.filter((a) => a.dia === nuevoDia).sort((a, b) => a.orden - b.orden)
+
+    if (direccion === 1) {
+      // Baja al día siguiente: entra de primera, las demás corren un puesto.
+      for (const a of delDiaDestino) {
+        await guardarActividad({ ...a, orden: a.orden + 1, actualizadoEn: ahora })
+      }
+      await guardarActividad({ ...actividad, dia: nuevoDia, orden: 1, actualizadoEn: ahora })
+    } else {
+      // Sube al día anterior: entra de última.
+      const nuevoOrden = delDiaDestino.length === 0 ? 1 : Math.max(...delDiaDestino.map((a) => a.orden)) + 1
+      await guardarActividad({ ...actividad, dia: nuevoDia, orden: nuevoOrden, actualizadoEn: ahora })
+    }
+
     await refrescar(visita.id)
   }
 
@@ -142,15 +173,17 @@ export default function Plan() {
                     </div>
                     <div className="flex shrink-0 flex-col gap-1">
                       <button
-                        disabled={idx === 0}
+                        disabled={idx === 0 && dia === 1}
                         onClick={() => moverOrden(a, -1)}
+                        title={idx === 0 ? `Mover al día ${dia - 1}` : 'Subir'}
                         className="h-6 w-6 rounded border border-slate-200 text-xs text-slate-500 disabled:opacity-30"
                       >
                         ▲
                       </button>
                       <button
-                        disabled={idx === delDia.length - 1}
+                        disabled={idx === delDia.length - 1 && dia === visita.duracionDias}
                         onClick={() => moverOrden(a, 1)}
+                        title={idx === delDia.length - 1 ? `Mover al día ${dia + 1}` : 'Bajar'}
                         className="h-6 w-6 rounded border border-slate-200 text-xs text-slate-500 disabled:opacity-30"
                       >
                         ▼
