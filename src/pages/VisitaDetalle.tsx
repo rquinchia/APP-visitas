@@ -76,13 +76,22 @@ export default function VisitaDetalle() {
         visita.estado === 'VISITA_TERMINADA' ||
         visita.estado === 'SEGUIMIENTO_PENDIENTES' ||
         visita.estado === 'CERRADO') && (
-        <Link
-          to={`/visitas/${visita.id}/hoy`}
-          className="flex items-center justify-between rounded-xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white active:bg-slate-800"
-        >
-          <span>📋 Ir a registro diario ("Hoy")</span>
-          <span>→</span>
-        </Link>
+        <div className="flex flex-col gap-2">
+          <Link
+            to={`/visitas/${visita.id}/hoy`}
+            className="flex items-center justify-between rounded-xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white active:bg-slate-800"
+          >
+            <span>📋 Ir a registro diario ("Hoy")</span>
+            <span>→</span>
+          </Link>
+          <Link
+            to={`/visitas/${visita.id}/reporte`}
+            className="flex items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 active:bg-slate-50"
+          >
+            <span>📤 Generar reporte (WhatsApp / Outlook)</span>
+            <span>→</span>
+          </Link>
+        </div>
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white p-4">

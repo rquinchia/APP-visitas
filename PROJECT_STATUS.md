@@ -52,8 +52,11 @@ Windows.
    prioridades P1–P4, estados, responsable/fecha con "POR ASIGNAR"/"POR DEFINIR" por defecto,
    fotos de evidencia y evidencia de cierre separadas, filtros por estado/prioridad, vista
    global y filtrada por visita).
-10. [ ] Reporte WhatsApp (Web Share API + copiar al portapapeles).
-11. [ ] Reporte Outlook (copiar/pegar + `mailto:`).
+10. [x] Reporte WhatsApp: plantilla ejecutiva exacta (📍/📊/✅/👥/🔎/📌/➡️), aviso automático de
+    pendientes sin responsable/fecha, cierre con referencia al informe por correo. Editable antes
+    de compartir (Web Share API) o copiar.
+11. [x] Reporte Outlook: asunto con el formato pedido, cuerpo con las 8 secciones y tabla final
+    ID/Prioridad/Pendiente/Responsable/Fecha/Estado. Copiar o abrir borrador de correo (`mailto:`).
 12. [ ] Cierre de visita + seguimiento post-visita.
 13. [ ] Backup/restore (exportar/importar proyecto en JSON portátil, con fotos).
 14. [ ] Pulido visual y funciones secundarias.

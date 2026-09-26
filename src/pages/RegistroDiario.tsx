@@ -119,6 +119,13 @@ export default function RegistroDiario() {
         </Link>
       </div>
 
+      <Link
+        to={`/visitas/${visita.id}/reporte?dia=${dia}`}
+        className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white active:bg-slate-800"
+      >
+        📤 Generar reporte del día
+      </Link>
+
       {delDia.length === 0 && (
         <p className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
           No hay actividades planificadas para este día.
