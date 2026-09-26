@@ -9,6 +9,7 @@ import ActividadForm from './pages/ActividadForm'
 import PlanVistaPrevia from './pages/PlanVistaPrevia'
 import Pendientes from './pages/Pendientes'
 import PendienteForm from './pages/PendienteForm'
+import RegistroDiario from './pages/RegistroDiario'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="visitas" element={<Visitas />} />
           <Route path="visitas/nueva" element={<NuevaVisita />} />
           <Route path="visitas/:id" element={<VisitaDetalle />} />
+          <Route path="visitas/:id/hoy" element={<RegistroDiario />} />
           <Route path="visitas/:id/plan" element={<Plan />} />
           <Route path="visitas/:id/plan/vista-previa" element={<PlanVistaPrevia />} />
           <Route path="visitas/:id/plan/nueva" element={<ActividadForm />} />

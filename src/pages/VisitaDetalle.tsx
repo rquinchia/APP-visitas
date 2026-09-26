@@ -72,6 +72,19 @@ export default function VisitaDetalle() {
         </dl>
       </div>
 
+      {(visita.estado === 'VISITA_ACTIVA' ||
+        visita.estado === 'VISITA_TERMINADA' ||
+        visita.estado === 'SEGUIMIENTO_PENDIENTES' ||
+        visita.estado === 'CERRADO') && (
+        <Link
+          to={`/visitas/${visita.id}/hoy`}
+          className="flex items-center justify-between rounded-xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white active:bg-slate-800"
+        >
+          <span>📋 Ir a registro diario ("Hoy")</span>
+          <span>→</span>
+        </Link>
+      )}
+
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <label className="mb-1 block text-sm font-medium text-slate-700">Fecha de inicio</label>
         <div className="flex gap-2">

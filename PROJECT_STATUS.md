@@ -37,9 +37,14 @@ Windows.
    obligatoria (editar/confirmar/compartir) antes de "Enviar a revisión" o "Enviar para
    aprobación". Historial de versiones: tras la aprobación, cualquier cambio exige motivo y
    crea una nueva versión (nunca sobrescribe en silencio).
-6. [ ] Activación de visita ("Iniciar visita") — el botón existe en el ciclo de vida; falta la
-   experiencia de "hoy" (checklist del día) que se activa al iniciar.
-7. [ ] Registro diario (checklist, avance, formación, hallazgos, pendientes).
+6. [x] Activación de visita ("Iniciar visita") + pantalla "Hoy" accesible desde el detalle en
+   cuanto la visita está activa (o terminada, para consulta).
+7. [x] Registro diario: checklist del día con botones grandes de estado (Completada/Parcial/
+   Bloqueada/…), comentario corto, fotos por actividad, selector de día para adelantar o
+   corregir, avance del día y total, accesos directos a actividad emergente y a pendiente.
+   Los cambios aquí son directos (sin exigir motivo) porque es el uso normal en campo; el
+   historial con motivo obligatorio sigue aplicando solo a ediciones estructurales del plan
+   (ver módulo 5).
 8. [x] Fotos: componente `FotosPicker` reutilizable (múltiples fotos por registro, cámara o
    galería en iPhone vía `capture="environment"`), integrado en Pendientes; falta conectarlo
    también a las actividades del registro diario (módulo 7).
