@@ -127,7 +127,7 @@ export default function Plan() {
         ← Volver a la visita
       </button>
 
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <div>
           <p className="text-sm font-medium text-slate-700">Plan de actividades</p>
           <p className="text-xs text-slate-500">{actividades.length} actividades · versión {visita.version}</p>
@@ -150,7 +150,7 @@ export default function Plan() {
       {dias.map((dia) => {
         const delDia = actividades.filter((a) => a.dia === dia).sort((a, b) => a.orden - b.orden)
         return (
-          <section key={dia} className="rounded-xl border border-slate-200 bg-white p-3">
+          <section key={dia} className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-800">Día {dia}</h3>
               <Link to={`/visitas/${visita.id}/plan/nueva?dia=${dia}`} className="text-xs font-medium text-accent">

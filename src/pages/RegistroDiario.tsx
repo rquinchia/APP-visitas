@@ -52,8 +52,12 @@ export default function RegistroDiario() {
   const avanceTotal = calcularAvance(actividades)
 
   async function marcarEstado(actividad: Actividad, estado: EstadoActividad) {
-    await guardarActividad({ ...actividad, estado, actualizadoEn: ahoraISO() })
-    if (visita) await refrescar(visita.id)
+    try {
+      await guardarActividad({ ...actividad, estado, actualizadoEn: ahoraISO() })
+      if (visita) await refrescar(visita.id)
+    } catch {
+      alert('No se pudo guardar este cambio en el dispositivo. Vuelve a intentarlo; si persiste, puede ser espacio de almacenamiento lleno.')
+    }
   }
 
   function onComentarioChange(actividadId: string, valor: string) {
@@ -63,8 +67,12 @@ export default function RegistroDiario() {
   async function guardarComentario(actividad: Actividad) {
     const texto = comentarios[actividad.id]
     if (texto === undefined || texto === actividad.observacion) return
-    await guardarActividad({ ...actividad, observacion: texto, actualizadoEn: ahoraISO() })
-    if (visita) await refrescar(visita.id)
+    try {
+      await guardarActividad({ ...actividad, observacion: texto, actualizadoEn: ahoraISO() })
+      if (visita) await refrescar(visita.id)
+    } catch {
+      alert('No se pudo guardar el comentario. El texto sigue en pantalla — vuelve a tocar fuera del recuadro para reintentar.')
+    }
   }
 
   return (
@@ -73,7 +81,7 @@ export default function RegistroDiario() {
         ← Volver a la visita
       </button>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{visita.planta || 'Planta sin definir'}</p>
@@ -134,7 +142,7 @@ export default function RegistroDiario() {
 
       <div className="flex flex-col gap-3">
         {delDia.map((a) => (
-          <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-4">
+          <div key={a.id} className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
             <p className="text-sm font-semibold text-slate-900">
               {a.emergente && <span className="mr-1 text-amber-500">⚡</span>}
               {a.actividad}

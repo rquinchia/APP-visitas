@@ -73,7 +73,7 @@ export default function PlanVistaPrevia() {
         ← Editar plan
       </button>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{TIPOS_VISITA[visita.tipo].nombre}</p>
         <h2 className="text-lg font-semibold text-slate-900">{visita.planta || 'Planta sin definir'}</h2>
         <p className="text-xs text-slate-500">Vista previa · versión {visita.version}</p>
@@ -89,7 +89,7 @@ export default function PlanVistaPrevia() {
         const delDia = actividades.filter((a) => a.dia === dia).sort((a, b) => a.orden - b.orden)
         if (delDia.length === 0) return null
         return (
-          <section key={dia} className="rounded-xl border border-slate-200 bg-white p-3">
+          <section key={dia} className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3">
             <h3 className="mb-2 text-sm font-semibold text-slate-800">Día {dia}</h3>
             <div className="flex flex-col gap-2">
               {delDia.map((a) => (
@@ -108,7 +108,7 @@ export default function PlanVistaPrevia() {
         )
       })}
 
-      <div className="sticky bottom-16 flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+      <div className="sticky bottom-16 flex flex-col gap-2 rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3 shadow-lg">
         <button onClick={compartir} className="rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700">
           Compartir
         </button>

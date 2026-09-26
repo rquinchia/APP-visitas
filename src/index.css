@@ -4,8 +4,6 @@
 
 :root {
   color-scheme: light;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html,
@@ -14,13 +12,50 @@ body,
   height: 100%;
 }
 
-body {
-  margin: 0;
-  background-color: #f8fafc; /* slate-50 */
-  color: #0f172a; /* slate-900 */
-  -webkit-tap-highlight-color: transparent;
+html {
+  scroll-behavior: smooth;
 }
 
-button {
+body {
+  margin: 0;
+  background-color: #e2e8f0; /* slate-200: fondo detrás del "marco" en pantallas anchas */
+  color: #0f172a; /* slate-900 */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+/* Realimentación táctil tipo iOS en toda la app: un único lugar, sin repetir clases en cada botón. */
+button,
+a,
+label.tap {
+  transition:
+    transform 120ms ease,
+    opacity 120ms ease,
+    background-color 120ms ease;
   touch-action: manipulation;
+}
+
+button:active,
+a:active,
+label.tap:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* Los elementos deshabilitados no deben "presionarse" visualmente. */
+button:disabled:active {
+  transform: none;
+  opacity: 1;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background-color: rgb(2 132 199 / 0.25); /* accent */
 }

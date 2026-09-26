@@ -93,14 +93,18 @@ export default function ActividadForm() {
         ? `Actividad reprogramada del día ${actividadOriginal!.dia} al día ${actividad.dia}: ${actividad.actividad}`
         : `Actividad editada (día ${actividad.dia}): ${actividad.actividad}`
 
-    const visitaActualizada = await registrarCambioPlan(visita, descripcion)
-    if (!visitaActualizada) {
+    try {
+      const visitaActualizada = await registrarCambioPlan(visita, descripcion)
+      if (!visitaActualizada) {
+        setGuardando(false)
+        return
+      }
+      await guardarActividad(actividad)
+      navigate(`/visitas/${visita.id}/plan`)
+    } catch {
+      alert('No se pudo guardar la actividad en el dispositivo. Verifica el espacio disponible e inténtalo de nuevo.')
       setGuardando(false)
-      return
     }
-
-    await guardarActividad(actividad)
-    navigate(`/visitas/${visita.id}/plan`)
   }
 
   return (

@@ -82,7 +82,7 @@ export default function Reporte() {
         ← Volver a la visita
       </button>
 
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <div>
           <p className="text-sm font-medium text-slate-700">Reporte del día</p>
           <p className="text-xs text-slate-500">{visita.planta || 'Planta sin definir'}</p>
@@ -105,7 +105,7 @@ export default function Reporte() {
         </div>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h3 className="mb-1 text-sm font-semibold text-slate-800">WhatsApp — resumen ejecutivo</h3>
         <p className="mb-2 text-xs text-slate-500">Previsualiza, edita si hace falta, y comparte o copia.</p>
         <textarea
@@ -124,7 +124,7 @@ export default function Reporte() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h3 className="mb-1 text-sm font-semibold text-slate-800">Outlook — informe detallado</h3>
         <p className="mb-2 text-xs text-slate-500">Copia el asunto y el cuerpo para pegarlos en un correo nuevo.</p>
 

@@ -100,7 +100,7 @@ export default function Pendientes() {
           <Link
             key={p.id}
             to={`/pendientes/${p.id}/editar`}
-            className="block rounded-xl border border-slate-200 bg-white p-4 active:bg-slate-50"
+            className="block rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4 active:bg-slate-50"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">

@@ -105,14 +105,18 @@ export default function PendienteForm() {
       actualizadoEn: ahora,
     }
 
-    await guardarPendiente(pendiente)
-
-    if (esNuevo) {
-      navigate(`/pendientes/${pendiente.id}/editar`, { replace: true })
-    } else {
-      navigate('/pendientes')
+    try {
+      await guardarPendiente(pendiente)
+      if (esNuevo) {
+        navigate(`/pendientes/${pendiente.id}/editar`, { replace: true })
+      } else {
+        navigate('/pendientes')
+      }
+    } catch {
+      alert('No se pudo guardar el pendiente en el dispositivo. Verifica el espacio disponible e inténtalo de nuevo.')
+    } finally {
+      setGuardando(false)
     }
-    setGuardando(false)
   }
 
   return (

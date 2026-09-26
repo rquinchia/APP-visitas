@@ -10,6 +10,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // El registro se hace a mano con el hook useRegisterSW (src/components/EstadoApp.tsx),
+      // para poder mostrar en la interfaz si hay actualización disponible. Sin esto, el plugin
+      // también inyectaría su propio script de registro y quedarían dos registros duplicados.
+      injectRegister: false,
       includeAssets: ['icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
       manifest: {
         name: 'Visitas Técnicas',

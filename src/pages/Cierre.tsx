@@ -68,7 +68,7 @@ export default function Cierre() {
         ← Volver a la visita
       </button>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Checklist de cierre</p>
         <h2 className="text-lg font-semibold text-slate-900">{visita.planta || 'Planta sin definir'}</h2>
         <p className="mt-1 text-sm text-slate-600">Avance final: {avance.porcentaje}%</p>
@@ -101,7 +101,7 @@ export default function Cierre() {
         </p>
       )}
 
-      <details className="rounded-xl border border-slate-200 bg-white p-4">
+      <details className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <summary className="cursor-pointer text-sm font-semibold text-slate-800">Historial de actividades ({actividades.length})</summary>
         <ul className="mt-2 flex flex-col gap-1 text-xs text-slate-600">
           {actividades.map((a) => (
@@ -112,7 +112,7 @@ export default function Cierre() {
         </ul>
       </details>
 
-      <details className="rounded-xl border border-slate-200 bg-white p-4">
+      <details className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <summary className="cursor-pointer text-sm font-semibold text-slate-800">Historial de cambios del plan ({historial.length})</summary>
         <ul className="mt-2 flex flex-col gap-1 text-xs text-slate-600">
           {historial.map((h) => (
@@ -124,7 +124,7 @@ export default function Cierre() {
         </ul>
       </details>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h3 className="mb-2 text-sm font-semibold text-slate-800">Resumen final — WhatsApp</h3>
         <pre className="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700">{resumenWhatsApp}</pre>
         <button onClick={() => copiar(resumenWhatsApp)} className="mt-2 w-full rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700">
@@ -132,7 +132,7 @@ export default function Cierre() {
         </button>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h3 className="mb-2 text-sm font-semibold text-slate-800">Informe final — Outlook</h3>
         <p className="mb-1 text-xs text-slate-500">Asunto: {asunto}</p>
         <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700">{informeOutlook}</pre>
@@ -157,7 +157,7 @@ export default function Cierre() {
 
 function Resumen({ etiqueta, valor, alerta }: { etiqueta: string; valor: number; alerta?: boolean }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 text-center">
+    <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3 text-center">
       <div className={`text-lg font-bold ${alerta ? 'text-rose-600' : 'text-slate-900'}`}>{valor}</div>
       <div className="text-[11px] text-slate-500">{etiqueta}</div>
     </div>

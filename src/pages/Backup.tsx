@@ -87,7 +87,7 @@ export default function Backup() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h2 className="text-sm font-semibold text-slate-800">Exportar respaldo</h2>
         <p className="mt-1 text-xs text-slate-500">
           Guarda todas las visitas, planes, pendientes y fotografías en un solo archivo. Guárdalo en OneDrive, correo o
@@ -103,11 +103,11 @@ export default function Backup() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h2 className="text-sm font-semibold text-slate-800">Importar respaldo</h2>
         <p className="mt-1 text-xs text-slate-500">Recupera la información desde un archivo de respaldo exportado antes.</p>
 
-        <label className="mt-3 flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-slate-300 py-3 text-sm font-medium text-slate-600">
+        <label className="tap mt-3 flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-slate-300 py-3 text-sm font-medium text-slate-600">
           Elegir archivo (.json)
           <input type="file" accept=".json,application/json" className="hidden" onChange={onArchivoSeleccionado} />
         </label>

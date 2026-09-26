@@ -38,26 +38,45 @@ export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta
   async function onArchivos(e: ChangeEvent<HTMLInputElement>) {
     const archivos = e.target.files
     if (!archivos || archivos.length === 0) return
+    let guardadas = 0
+    let fallo = false
     for (const archivo of Array.from(archivos)) {
-      await guardarFoto({
-        id: generarId(),
-        visitaId,
-        entidadTipo,
-        entidadId,
-        blob: archivo,
-        nombreArchivo: archivo.name,
-        etiqueta,
-        creadoEn: ahoraISO(),
-      })
+      try {
+        await guardarFoto({
+          id: generarId(),
+          visitaId,
+          entidadTipo,
+          entidadId,
+          blob: archivo,
+          nombreArchivo: archivo.name,
+          etiqueta,
+          creadoEn: ahoraISO(),
+        })
+        guardadas++
+      } catch {
+        fallo = true
+        break
+      }
     }
     e.target.value = ''
     await cargar()
+    if (fallo) {
+      alert(
+        guardadas > 0
+          ? `Se guardaron ${guardadas} foto(s), pero una falló (posible espacio de almacenamiento lleno). Las que se guardaron están seguras.`
+          : 'No se pudo guardar la foto. Puede ser espacio de almacenamiento lleno en el dispositivo.',
+      )
+    }
   }
 
   async function borrar(id: string) {
     if (!window.confirm('¿Eliminar esta foto?')) return
-    await eliminarFoto(id)
-    await cargar()
+    try {
+      await eliminarFoto(id)
+      await cargar()
+    } catch {
+      alert('No se pudo eliminar la foto. Inténtalo de nuevo.')
+    }
   }
 
   return (
@@ -77,7 +96,7 @@ export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta
             </button>
           </div>
         ))}
-        <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 text-slate-400 active:bg-slate-50">
+        <label className="tap flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 text-slate-400">
           <span className="text-xl">📷</span>
           <span className="text-[10px]">Añadir</span>
           <input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={onArchivos} />

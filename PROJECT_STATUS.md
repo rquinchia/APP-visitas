@@ -15,6 +15,31 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Pulido visual + confiabilidad offline (2026-09-26, sesión 3)
+
+- **Indicador de conexión + verificación de actualización** (`src/components/EstadoApp.tsx`,
+  visible en el encabezado): punto verde/gris de "En línea" / "Sin conexión", botón 🔄 para
+  forzar la verificación de una versión nueva, y confirma explícitamente "Ya tienes la última
+  versión ✓" o "Hay una actualización disponible" (con botón para aplicarla). Usa el hook oficial
+  `useRegisterSW` de `vite-plugin-pwa` (`virtual:pwa-register/react`); se desactivó el registro
+  automático por script (`injectRegister: false`) para evitar un doble registro del service
+  worker.
+- **Nunca se pierde información**: se agregó manejo de errores explícito (con aviso claro al
+  usuario) en los guardados más usados en campo — registro diario (estado/comentario de
+  actividad), fotos, formulario de actividad y formulario de pendiente. Si el guardado en el
+  dispositivo llegara a fallar (por ejemplo, almacenamiento lleno), la app avisa en vez de fallar
+  en silencio; los datos que sí se alcanzaron a guardar no se tocan.
+- **Diseño más "nativo"**: retroalimentación táctil tipo iOS en toda la app (un solo cambio
+  global en `index.css`, sin tocar cada botón), tarjetas con sombra suave en vez de borde duro,
+  encabezado y barra inferior con efecto de vidrio esmerilado (blur), pestaña activa resaltada.
+  En pantallas anchas (PC), la app se muestra como una tarjeta centrada con sombra sobre un fondo
+  degradado, en vez de estirarse de borde a borde — en el iPhone no cambia nada (sigue a pantalla
+  completa). Se corrigió además un padding de área segura duplicado que existía desde el
+  andamiaje inicial (podía dejar un espacio en blanco de más arriba del encabezado en iPhones
+  con notch/Dynamic Island).
+- Verificado con `npm run typecheck`, `npm run build` y `npm run preview` (petición HTTP real)
+  sin errores.
+
 ## Publicada y en uso (2026-09-26)
 
 - **App en vivo**: https://rquinchia.github.io/APP-visitas/ — confirmada instalada y funcionando

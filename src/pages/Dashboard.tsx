@@ -59,7 +59,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link to="/pendientes" className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-3 active:bg-slate-50">
+      <Link to="/pendientes" className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3 active:bg-slate-50">
         <ResumenCelda etiqueta="P1 críticos" valor={rp.p1} alerta={rp.p1 > 0} />
         <ResumenCelda etiqueta="P2 altos" valor={rp.p2} alerta={rp.p2 > 0} />
         <ResumenCelda etiqueta="Abiertos" valor={rp.abiertos} />
@@ -83,7 +83,7 @@ export default function Dashboard() {
           <Link
             key={visita.id}
             to={`/visitas/${visita.id}`}
-            className="block rounded-xl border border-slate-200 bg-white p-4 shadow-sm active:bg-slate-50"
+            className="block rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4 shadow-sm active:bg-slate-50"
           >
             <div className="flex items-start justify-between gap-2">
               <div>

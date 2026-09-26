@@ -52,7 +52,7 @@ export default function VisitaDetalle() {
         ← Volver a visitas
       </button>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{TIPOS_VISITA[visita.tipo].nombre}</p>
         <div className="mt-1 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">{visita.planta || 'Planta sin definir'}</h2>
@@ -94,7 +94,7 @@ export default function VisitaDetalle() {
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <label className="mb-1 block text-sm font-medium text-slate-700">Fecha de inicio</label>
         <div className="flex gap-2">
           <input
@@ -112,7 +112,7 @@ export default function VisitaDetalle() {
         </div>
       </div>
 
-      <Link to={`/visitas/${visita.id}/plan`} className="block rounded-xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+      <Link to={`/visitas/${visita.id}/plan`} className="block rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4 active:bg-slate-50">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-slate-700">Plan de actividades</p>
           <span className="text-sm text-accent">Ver plan →</span>
@@ -128,7 +128,7 @@ export default function VisitaDetalle() {
       </Link>
 
       {transicionesDisponibles.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
           <p className="mb-2 text-sm font-medium text-slate-700">Ciclo de vida</p>
           <div className="flex flex-col gap-2">
             {transicionesDisponibles.map((t) => {
@@ -168,7 +168,7 @@ export default function VisitaDetalle() {
         </div>
       )}
 
-      <Link to={`/pendientes?visitaId=${visita.id}`} className="block rounded-xl border border-slate-200 bg-white p-4 active:bg-slate-50">
+      <Link to={`/pendientes?visitaId=${visita.id}`} className="block rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4 active:bg-slate-50">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-slate-700">Hallazgos y pendientes</p>
           <span className="text-sm text-accent">Ver todos →</span>

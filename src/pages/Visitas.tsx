@@ -29,7 +29,7 @@ export default function Visitas() {
         <Link
           key={v.id}
           to={`/visitas/${v.id}`}
-          className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 active:bg-slate-50"
+          className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4 active:bg-slate-50"
         >
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{TIPOS_VISITA[v.tipo].nombre}</p>
