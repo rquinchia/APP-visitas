@@ -1,0 +1,435 @@
+EUROLLS
+1
+Instruction Manual
+Roi/Ing Cassette type CB - C-01O & C-086 • BK version
+Rev. 0 • 2018
+EUROLLS
+ROLLING CASSETTE
+Type CB
+Operation and Maintenance Manual
+EUROLLS S.p.A
+Via Malignani, 14
+33040 ATTIMIS (UD)
+Tel. +39 0432 796511
+Fax +39 0432 796501-796502
+Works: Via degli Ortolani, 54
+EUROLLS
+1
+Instruction Manual	Roi/Ing Cassette type CB - C-010 & C-086   •   BK version	Rev. 0 .2018
+CONTENTS
+EUROLLS
+1
+Instruction Manual	Rolling Cassette type CB - C-010 & C-086 • BK version	Rev. 0 • 2018
+INTRODUCTION
+1.1  General and safety-related  information
+The rolling cassette type CB, which is described in this manual, has been developed for the cold rolling of steel rods with a maximum entry diameter of 14 mm.
+It is composed of two opposed Sets of 3 rolls; the rolls of each triad are at a 120° angle to each other.
+The simultaneous opening/closing of the rolls of each Set is carried out manually by means of the suitable crank supplied with the machine.
+The rolling cassettes are intended to be added to a transformation line equipped, in particular, with a pulling block which provides the force necessary to pull the strand through the rolls.
+The operating instructions contained in this manual are part of the technical documentation of the supply and are an integral part of the documentation of the line where the rolling cassette is inserted.
+The information contained herein is intended for the personnel responsible for the installation, use and maintenance of the cassette .
+In order to keep operators free from risk and danger and avoid damage to the equipment parts, it is essential to be familiar with this Manual before carrying out any operation on the equipment or its parts.
+Full  knowledge  of  and  compliance  with  the  instructions  provided  in  this  manual are  essential conditions  for the  proper   handling  and  maintenance  of  the  cassette. The  manual  must  be kept near the  rolling cassettes,  in a safe  place, where  it can  be available to all the people  required to consult it.   Furthermore, it must be unabridged and entirely readable.
+Both the operational and maintenance personnel must have a copy of this manual.
+Careful compliance with the instructions contained in this manual, during the installation, handling and maintenance phases, is the essential condition for proper and long-lasting operation of the cassette.
+EUROLLS S.p.A. is not to be held responsible for any damage caused to personnel or machine resulting from non-compliance with the instructions contained herein.
+The rolling cassettes must only be used by personnel who has read, understood and learnt the instructions contained in this Manual and in any case, only by trained and qualified personnel.
+These Manual's Instructions neither can in any way replace, supplement or modify any Standard, Prescription, Decree, Directive or Law on the specific matter in force In the place of Installation and concerning the safety, use and maintenance nor can be a substitute for the personnel training.
+Should any part of this manual appear insufficiently clear to the reader, EUROLLS S.p.A. technical department is available to provide all necessary information and clarifications.
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+Rev. O - 2018
+1.2 Identifying label of the cassette
+As shown in the figure below, each cassette bears an identifying label containing not only the data about the manufacturer, but also the type of cassette, the serial number, the year of fabrication and the number of the construction job.
+THIS MANUAL IS PROPERTY OF - Eurolls S.p.A .• ANY TOTAL OR PARTIAL REPRODUCTION IS STRICTLY FORBIDDEN
+EUR.O.. LLS
+...	1
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+Rev. 0 .2018
+GENERAL DESCRIPTION OF THE CASSETTE
+The cassette described in this manual is suitable for the rolling of smooth or ribbed low-carbon steel wire within the following diameters: max entry diameter 14 mm, minimum exit wire diameter 3,0 mm.
+The cassette does not operate independently but is usually mounted onto a rolling line equipped with a pulling head.
+The steel wire, anchored to the pulling head, goes through the idle rolling rolls, its section undergoes a cold plastic deformation due to the necking down by means of the profiles on the two Sets; the section is thus reduced and an exit diameter smaller than the entry diameter is obtained.
+The rolls are mounted on suitable roll holders equipped with bearings and lie at a 120° angle to each other (Set of 3 Rolls - system).
+The roll holders are mounted onto the cassette by means of pins with a series of holes and linked to a cooling system in order to disperse the heat generated during the rolling process.
+To this end the cassette is equipped with points where it is possible to add cooling fluid as well as with points to which the discharge pipes for the warm fluid can be attached, so that it can reach the cooling system; this ensures the constant availability of cooling fluid at a suitable temperature to enter the cassette.
+Each cassette is equipped with two independent cooling systems, one on each of the two different wire entry and exit groups.
+These two groups are equipped with the following types of rolls, depending on what kind of rolled material shall be produced:
+STRUCTURAL RIBBED WIRE
+The first set at the wire ENTRY "Forming rolls FO" reduces the wire section to a triangular shape so that the wire is ready to enter the following set, where the ribbing takes place.
+The function of the second triad at the wire EXIT "Ribbing rolls PR" is to obtain a ribbed wire according to the customer's specific requirements.
+Fig. 1 • 1
+THIS MANUAL IS PROPERTY OF - Eurolls S.p.A. - ANY TOTAL OR PARTIAL REPRODUCTION IS STRICTLy FORBIDDEN
+EUR.O..
+LLS
+...	1
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+Rev. 0 • 2018
+SMOOTH WIRE
+The first set at the wire ENTRY "Reducing rolls RO" reduces the wire section to an oval shape before the wire enters the following set, where the sizing to the required 0 takes place.
+The function of the second triad at the wire EXIT "Sizing rolls CA" is to obtain a smooth round wire.
+Sizing rolls CA
+Fig. 1 • 2
+EURO...
+...
+LLS
+1
+Instruction Manual	Rolling Cassette type CB - C-010 & C-086 • BK version	Rev. 0 • 2018
+Dimensions and specifications
+The cassette is composed of two equal, opposed steel structures onto which the two different sets of rolls are mounted; the sets are linked to each other by means of 2+2 tension rods which make the cassette firm
+Fig. 2
+EURO...
+' • '
+LLS
+1
+Instruction Manual	Rolling Cassette type CB - C-010 & C-086 • BK version	Rev. 0 • 2018
+Tab.1 Specifications of the rolling cassette CB
+EUROLLS
+1
+Instruction Manual	Roi/Ing Cassette type CB - C-010 & C-086 • BK version	Rev. 0 • 2018
+Components of the cassette
+The main components of the rolling cassette shown in Fig.3, are given below:
+N° 2	Heads with 3 rolls (ref. A)
+N° 2	Reduction units to open I close the rolls (ref. B) N°2	Control axle of the reduction unit (ref. C);
+N°1+1		Revolution counter (ref. D & H) - D code 2010022316 & H code 2010022316 (To program digital counters consult the specific manual provided)
+N°3+3	Lubricating points on roll holders bearings (ref. E);
+N°1+1	Lubricating points of the reduction unit worm screw (ref. F);
+N°2+2	Lubricating points of the screw for the opening/closing movement of the rolls (ref. G); N°2+2	Feeding/discharge points for the cooling fluid (R)
+Instruction Manual	Rolling Cassette type CB - C-01O & C-086 • BK version	Rev. O • 2018
+Lubrication system
+The bearings of the roll holders (ref. E), Fig.3
+the reduction unit VSF (ref. F), Fig.3
+the screw for the opening/closing movement of the rolls (ref. G), Fig.3
+must be l ubricated with grease.
+The cassette is equipped with:
+3 lubricating points in each head; they feed grease to the bearings of the roll holders (Fig. 4 • a ref.1)
+Fig. 4 • a
+EURO...
+LLS
+...		1 	
+Instruction Manual
+Roi/Ing Cassette type CB - C-010 & C-086 • BK version
+Rev. 0 .2018
+1 lubricating point in each head to feed grease to the reduction unit VF (Fig. 4 - b ref.2).
+1 lubricating point in each head to feed grease to the screw for the opening/closing movement of the rolls (Fig. 4 -b ref.3).
+Fig. 4  • b
+Use a manual grease gun to carry out these interventions.
+Lubrication Interval:
+approximately every 4 hours of continuous production for the bearings of the roll holders
+once a month for the reduction unit VSF
+once a month for the screw for the opening/closing movement of the rolls. Grease quantity for each lubricating nipple: about 0,25 cc.
+Type of grease: Multis Complex EP2 or equivalent.
+Reference specifications for an equivalent grease type Multis Complex EP2
+EUROLLS
+1
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+Rev. 0 • 2018
+Cooling system
+The cassette is equipped with a cooling system to dissipate the heat generated by the bearings inside the roll holders during the rolling process.
+To this end the pins supplied together with the cassette are equipped with holes through which the cooling fluid flows in order to ensure that the bearings of the roll holders always operate within the ideal temperature range for correct operation.
+The specifications of the cooling fluid, usually water, shall be as follows:
+Only filtered and decalcified water shall be used	Ph 6-6.5
+Quantity  of cooling water:	400/600 1/h for each cassette
+Minimum entry  temperature:	16°-18°C
+Maximum  allowed  entry temperature:	25°C
+6. of pressure between entry and discharge	1 bar
+-The cooling fluid is fed to both structures by means of the connection of the 1/4" GAS threaded holes shown in Fig. 5 (ref.1).
+-The circuit is composed of the connection of the three pins in a row by means of flexible hoses, as shown in Figures 2 and 3. The fluid can flow through the hoses in both directions, there is no privileged direction.
+Fig. 5
+EURO...
+.,.
+LLS
+1
+Instruction Manual	Rolling Cassette type CB - C-010 & C-086   •   BK version	Rev. 0 .2018
+2.5  Lifting and handling the rolling cassette
+The points shown in the Fig. 6 (points "A" and "B"), relating to the 2 eyebolts supplied with the machine, are used to lift and move the cassette.
+While lifting or moving the cassette, sharp movements and dangerous oscillations shall be avoided.
+WARNING
+All lifting operations must be carried out exclusively by authorized and qualified personnel.
+WARNING
+Abrupt movements of the cassette during handling may damage the rolling cassette and have an effect on its proper operation.
+In addition, damp can cause damage to the cassette so always keep it dry.
+WARNING
+We recommend you to verify the correlation between the pulling angle and the values given in the table supplied by the rope, chain or sling manufacturer and using lifting devices with a capacity at least 30% greater than the load to lift, which is to be inferred from the chart "Technical specifications" (see par. 2.1 Tab 1).
+EUROLLS
+, • ,
+' • '
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+1
+Rev. 0 - 2018
+ADJUSTING THE ROLLING CASSETTE
+After positioning and correctly aligning the cassette on the wiredrawing machine:
+fix it by means of screws M12 supplied (Fig.7 ref. A)
+connect it to the water circuit (Fig. 5)
+verify that there is grease in the roll holders by pumping new grease from the relevant lubrication units (Fig. 4-a ref. 1)
+insert the wire to be rolled into the cassette.
+Insertion of the Wire into the Cassette
+In order to insert the wire correctly into the cassette, proceed as follows:
+open the two Sets of rolls by using the relevant crank supplied with the machine (Fig. 8, ref. A) and by turning into the direction "OPENED" (Fig.8, ref. B)
+This operation is carried out by acting on the 2 reduction units to open/close the rolls (Fig. 3 ref. C and 8), which enable the simultaneous opening of the two Sets independently.
+EUROLLS
+1
+Instruction Manual	Rolling Cassette type CB - C-010 & C-086 • BK version	Rev. 0 • 2018
+Verify that the inserted wire remains between the profiles of the three rolls of each Set; should it accidentally slip out, this could damage the tungsten carbide rolls when the force necessary to roll the inserted material is applied.
+WARNING
+Verify that the wire is in the center in between the rolls so as to avoid spoiling the workpiece and cause possible damage to the rolls.
+Correctly anchor the wire exiting the cassette to the capstan or to the pulling block and verify that the wire is correctly aligned and orthogonal to the working axis of the cassette.
+Begin the alternating closing of the two triads of rolls.
+Close in advance the two triads of rolls so as to enable the rolls and the material to be rolled to come into touch. (When this happens, there is a light resistance to the closing force).
+Proceed then to close alternatively the rolls and activate the capstan or pulling block, in strict observance of the specifications of the producer of the wiredrawing machine so as to ensure complete operational safety and to obtain, at the exit of the cassette, a product corresponding to the requirements.
+If the size of the exiting wire does not correspond to the requirements, repeat the adjusting procedure until a product with the required features is obtained.
+The size of the exiting wire shall be measured every time the rolls are adjusted.
+The value observed on the graduated scale shown in Fig. 9 shall be used as reference for the position of the rolls.
+In this case, the fixed graduated scale "O - 60" on the front side of the cassette will serve as verification for the reference notch on the central rolling body, so that it can be put back into the same position as before, without having to carry out the adjustments again, thus saving time.
+-··-
+--·-
+Fig. 9
+IT IS IMPORTANT THAT THE ROLLS DO NOT COME INTO TOUCH WITH EACH OTHER TO AVOID THEIR BREAKAGE
+EUROLLS
+.  .
+•  , •
+Instruction Manual
+Roi/Ing Cassette type CB - C-010 & C-086 • BK version
+1
+Rev. 0 • 2018
+Mounting and demounting the rolls
+In case there is not available Eurolls Maintenance Bench specifically to be used for this kind of cassettes, (see Fig. Z), the cassette shall be place onto a suitable flat support.
+FIG. Z
+Operate as follows to mount and demount the rolls correctly:
+Stop the rolling line.
+Disconnect the connections of the cooling water feeding circuit.
+Bring the cassette to an appropriate maintenance place
+Separate the 2 half-bodies making up the cassette by unscrewing the 4 screws by means of the wrench CH24, supplied with the machine (Fig. 1O ref. A).
+To separate the 2 half-bodies, will be necessary to remove one counter D.
+Fig. 10
+EUROLLS
+1
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+Rev. 0 • 2018
+While unscrewing the 4 screws (Fig. 1O ref. A) by means of the wrench CH 24, the right or left structure should be kept slightly lifted by attaching it to an adequate lifting device by means of a rope.
+Fig. 11
+Fig. 12
+After having separated the two structures - right and left - making up the cassette.
+Ready to Remove the Rolls
+EUROLLS
+1
+Instruction Manual
+Rolling Cassette type CB - C-010 & C·086   •   BK version
+Rev. 0 .2018
+To Remove the Rolls
+the flexible hoses of the water circuit shall be detached from the pins of the roll holders (Fig. 13).
+It is not necessary to detach the hoses of the lubrication system, as the relevant connections are not on the pin but on the fixed wall of the jaw.
+Fig. 13
+by means of an adequate wrench, not supplied with the machine, loosen and remove the ring nut of the pin of the roll holder (Fig.14).
+Fig. 14
+EUROLLS
+1
+Instruction Manual
+Roi/Ing Cassette type CB - C-01O & C-086 • BK version
+Rev. 0 .2018
+extract the pin completely while supporting the roll being demounted with your hand, in order to avoid its falling and damaging the carbide ring. (Fig.15).
+Fig. 15
+Assembly new Rolls
+After having demounted the rolls from the cassette, it is possible to mount the new ones by following the same steps in reverse order, as explained below:
+- insert the roll with its roll holder into the jaw and make sure that:
+insert fully the pin, ensuring that, the dowel pin, shown on Fig. (W) ,
+Fig. W
+screw and fasten the ring nut fastening the pin of the roll holder by means of the relevant wrench; reconnect the flexible hoses of the cooling system.
+EUROLLS
+1
+Instruction Manual
+Ro/ling Cassette type CB - C-010 & C-086 • BK version
+Rev. 0 • 2018
+After having substituted one or both triads of rolls, the two structures - left and right - making up the cassette shall be closed again, following the same procedure described above for the demounting process:
+keep the left or right structure slightly lifted by attaching it to an adequate lifting device by means of a rope
+bring the structure closer and align it with the 2+2 connecting tension rods and make sure that they are correctly inserted into the relevant 4 centring seats in the structure (Fig. 16 - ref. A)
+Fig. 16
+mount the 4 screws (Fig. 16 & 17) and tighten them. reassembly one counter  D (Fig.17)
+Fig. 17
+EUROLLS
+1
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+Rev. 0 .2018
+AXIAL adjustment of individual roll
+Normally the cassette does not need any AXIAL adjustment of the single rolls because the tolerances of all its components ensure the correct alignment and subsequently also the dimensional characteristics required for the rolled product exiting the cassette.
+ed with a SCREWS & NUT apart.
+After   adjustment  of the roll,  tighten the nuts to retain stops the screws.
+EUROLLS
+1
+Instruction Manual
+Roi/Ing Cassette type CB - C-010 & C-086 • BK version
+Rev. o • 2018
+Direction of rotation of the roll's lock nut
+The rolls must be assembled on the rolling cassette such that the direction of rotation of the roll holder corresponds to the unscrewing direction of the roll's lock nut, as shown in the figure below. (Fig.  18)
+Thus the lock nut is prevented from any dangerous unloosening during rotation (see Fig. 19) of the  roll.
+Fig. 19
+- Fig. 19 correct direction of the rotation of the rolls in reference to the ring nuts fastening the holders
+EUROLLS
+1
+Instruction Manual
+Rolling Cassette type CB - C-010 & C-086 • BK version
+Rev. o • 2018
+4	RECCOMMENDED SPARE PARTS & ACCESSORIES
+(only available  on request)
+Pins Kit  for CL25CB33
+Pins Kit  for CL26CB33
+CL2&CB33 PINS KIT
+--38S
+025 ROU. HO!.DER PIN
+CL26CB33 PINS KIT
+E20A-0000043l5
+026 ROl.l HOLDER PIN
+M5x5 UN15923 SOCKET
+MSxS UN15923 S. OCKE"T ALLEN	l
+2020003341
+GUK 25xl.5 UAAMA
+LOCK Nllf
+2020001989
+ALLEN SET SCREW e e e
+20100011119
+2020001989
+f
+SET SCREW	,,
+201000t92'
+85118.UELBOW
+2010001924
+Bl 118-816
+118" CYl-coN
+( M-M )ELBOW
+I	2010001924	2010001189
+2010001114	2010001189	811/8-816	118" CYl.coN
+SOCKET AUEN	85 118-816 El.BOW PARRAi.EL NIPPLE ( M-M) ELBOW
+ 		MALE ( C3210353
+PAAAAl.f l NIPPI.E ICl210453 l
+PIPE PLUG R118      MAI.E ( Cl210353 l   !C3210453)
+E20A-000006294
+E20A-000006295
+S  are Parts for  CL25/26CB33
+c::":::::-:=:;;;;--.---	...,...	CUVMCIIUJ=.-- 	--	--,
+GAUSE HOSES KIT
+1,r Cil,ICOIIEl.lOWMUMW'IU
+201oao11n	•
+111' DROPMNffl.l
+l0110t1QI
+E20A-000006296
+Accessory E20C-000000162
+E20A-000006297
+Accessory  2010000511  - GU25
+EUROLLS
+1
+Instruction Manual	Rolling Cassette type CB - C-010 & C-086   -   BK version	Rev. 0 .2018
+5	MAINTENANCE AND TOOLS SUPPLIED
+Every 4 hours:
+lubricate the roll holders
+check the temperature of the roll holder's pin
+The amount of grease required every day is about  12 cm3
+Every week:
+clean the rolling cassette, paying particular attention when cleaning the roll holders verify that the rotation of rolls is regular and that the rolls rotate freely .
+Every month:
+check the grease and water distribution hoses for ruptures grease the
+lubricating points of the reduction unit worm screw (ref. F) and
+the lubricating points of the screw for the opening/closing movement of the rolls (ref. G);
+Every year:
+remove limescale from the cooling water system of the roll holder's pins To efficiently and correctly lubricate we recommend you to use
+grease Multis Complex EP or equivalent.
+WRENCHES SUPPLIED
+Fig. 20
+These special wrenches (Fig. 20) are supplied with the rolling cassette.
+They are used for the simultaneous opening/closing of the rolls of each head, to loosen/tighten and one wrench serves to demounVconnect the two half-bodies of the cassette.
+Length | 530 mm
+Width | 290 mm
+Height | 290 mm
+Weight without rolls and roll holders | 150 kg
+Distance of the wire axis from the base | 145 mm
+Number of heads | 2
+Number of rolls for each head | 3
+Opening/closing  of rolls | Manual by means of crank wrench supplied with the  machine
+Roll size
+-	outer diameter
+inner diameter
+thickness | max. 125 / min. 118 mm
+82 mm
+15 / 20 mm
+Diameter of the pins supporting the  rolls | 25 / 26 mm
+Axial adjustment of each roll | +/- 0
+Material of the roll | HM (tungsten carbide)
+Quality of the entry  material | Low carbon steel
+Maximum diameter of entry wire | 14 mm (low carbon steel)
+Technological process | Rolling 3 + 3
+TYPICAL CHARACTERISTICS | METHODES | UNITS | MULTIS COMPLEX EP 2
+Soapllhickener | ASTM O 217/DIN 51 818 | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | lithil.lTI mmplex
+NLGl grade | ASTM O 217/DIN 51 818 | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | 2
+Color | Visual | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | Red
+Appearance | V1Sual | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | Smooth
+Operating temperature range |  | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | -20 to 160
+Penetratia'I at 25•c | ASTM D217JOIN51 818 | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | 265-295
+Four 1>311 weld load | DIN51350-4 | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | 281)..300
+Anti-l\lSt performance  SKF·EMcx:R | DlN 51802/IP220JNFT 60-1351150 11007 | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | l)..Q
+Dropping point | IP39MllN ISO 2176 | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | >Z75
+Kinematic viscosity of the base oil at 40•c | ASTM 0445'DIN 51 562-lnSO 3104IIP71 | -
+-
+-
+.
+"C
+0.1nm daN rating "C
+mm'ls (cSt) | 165

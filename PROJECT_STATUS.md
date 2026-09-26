@@ -1,0 +1,77 @@
+# PROJECT_STATUS — APP Visitas
+
+_Última actualización: 2026-09-26_
+
+## Objetivo
+
+App PWA mobile-first, offline-first e instalable, para administrar visitas técnicas
+industriales (PA – Stretch Line 15 días, SC – Soldadoras de alambrón 5 días, FL – Rolling
+Cassette 5 días) desde planificación hasta cierre y seguimiento de pendientes. Sin backend
+obligatorio en v1. Uso principal en campo desde iPhone; gestión/planificación también desde
+Windows.
+
+## Arquitectura
+
+- Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
+- Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
+
+## Estado del entorno (Fase 0 — completada)
+
+- Node v24.17.0 / npm 11.13.0: OK.
+- Git: no está en PATH del sistema; se usa el portátil de GitHub Desktop (ver CLAUDE.md). OK.
+- `winget`/`scoop`: bloqueados por política corporativa — no se necesitan, no bloquean el proyecto.
+- Python 3.13 + pymupdf/python-docx/pywin32 (`pip install --user`): usados solo para extraer
+  texto de los 5 manuales técnicos a `reference/extracted/`. No forman parte de la app.
+- 5 manuales técnicos recibidos, leídos y clasificados por visita (tabla en CLAUDE.md).
+
+## Tareas (orden de implementación del MVP)
+
+1. [x] Fase 0 — verificación de entorno, manuales y reglas del proyecto.
+2. [x] Andamiaje técnico del proyecto (Vite/React/TS/Tailwind/PWA/IndexedDB) + modelo de datos base.
+3. [ ] Dashboard.
+4. [ ] Gestión de visitas (crear/editar visita, datos generales).
+5. [ ] Plan editable/reordenable (actividades por día, historial de versiones).
+6. [ ] Activación de visita ("Iniciar visita").
+7. [ ] Registro diario (checklist, avance, formación, hallazgos, pendientes).
+8. [ ] Fotos (múltiples por actividad/hallazgo/acción/evidencia).
+9. [ ] Hallazgos / pendientes (módulo independiente con prioridades y estados).
+10. [ ] Reporte WhatsApp (Web Share API + copiar al portapapeles).
+11. [ ] Reporte Outlook (copiar/pegar + `mailto:`).
+12. [ ] Cierre de visita + seguimiento post-visita.
+13. [ ] Backup/restore (exportar/importar proyecto en JSON portátil, con fotos).
+14. [ ] Pulido visual y funciones secundarias.
+
+## Completado
+
+- Inspección del directorio y del entorno Windows corporativo (sin admin).
+- Localización de un Git funcional sin instalar nada nuevo (portátil de GitHub Desktop).
+- Confirmado que `npm install` funciona localmente sin privilegios elevados.
+- Extracción y clasificación de los 5 manuales técnicos por visita, en
+  `reference/extracted/*.txt` (fuente única autorizada de datos técnicos — no se inventan
+  parámetros).
+- `CLAUDE.md` con reglas permanentes del proyecto.
+
+## Pendiente inmediato
+
+- Construir el Dashboard y la gestión de visitas (módulos 3–4) sobre el andamiaje creado.
+- Definir con datos reales de los manuales las plantillas de actividades sugeridas por visita
+  (PA/SC/FL), marcando cada dato como `[FABRICANTE]`, `[BUENA PRÁCTICA]` o `[VALIDAR EN PLANTA]`.
+- Generar íconos reales de la app (actualmente placeholders) antes de publicar/instalar en iPhone.
+
+## Decisiones tomadas
+
+- **Sin backend obligatorio en v1**: todo local (IndexedDB) con export/import JSON como respaldo
+  portátil. Sincronización con OneDrive/SharePoint/Listas queda como capa desacoplada para el
+  futuro, sin bloquear el uso actual.
+- **Compartir por WhatsApp**: Web Share API + "copiar al portapapeles" como respaldo. No se
+  implementa la API de WhatsApp (requeriría registro/autorización que no se puede gestionar sin
+  TI/administración).
+- **Outlook**: generación de texto para copiar/pegar y enlace `mailto:` cuando el navegador lo
+  permita. No se usa Microsoft Graph (requeriría registro de app en Azure — fuera del alcance de
+  permisos normales).
+- **Los manuales originales (PDF/DOC, ~150 MB en total) no se versionan en git**: son archivos
+  binarios grandes de referencia, no código. Se conserva únicamente su extracto de texto
+  (`reference/extracted/`) para trazabilidad de las decisiones de contenido.
+- **Git portátil**: se usa el que incluye GitHub Desktop porque `winget`/instaladores requieren
+  admin o están bloqueados por política de grupo. No se modificó el PATH del sistema, solo el de
+  la sesión de trabajo (ver CLAUDE.md para el comando).

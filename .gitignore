@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo
+.DS_Store
+
+# Manuales originales (binarios grandes, no son código; ver reference/extracted/ para el texto)
+*.pdf
+*.doc
+*.docx
+
+# Datos de usuario exportados localmente (respaldos) no deben versionarse
+*.appvisitas.json
+backups/
