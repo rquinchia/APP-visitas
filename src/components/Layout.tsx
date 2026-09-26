@@ -4,6 +4,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Panel', icono: '📊', fin: true },
   { to: '/visitas', label: 'Visitas', icono: '🏭', fin: false },
   { to: '/pendientes', label: 'Pendientes', icono: '📌', fin: false },
+  { to: '/backup', label: 'Respaldo', icono: '💾', fin: false },
 ]
 
 export default function Layout() {

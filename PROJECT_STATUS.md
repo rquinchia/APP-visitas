@@ -62,8 +62,13 @@ Windows.
     actividades y de cambios del plan) y los informes finales consolidados (WhatsApp y Outlook,
     con toda la visita, no solo el último día) antes de confirmar. Los pendientes abiertos no se
     cierran solos: pasan a seguimiento post-visita (siguiente estado del ciclo de vida).
-13. [ ] Backup/restore (exportar/importar proyecto en JSON portátil, con fotos).
+13. [x] Backup/restore: exportar todo el proyecto (visitas, plan, pendientes, historial y fotos
+    en base64) a un único archivo `.json` portable, descargable o compartible (Web Share API);
+    importar con opción de "combinar" o "reemplazar todo" (con advertencia explícita antes de
+    borrar datos). Acceso permanente desde un cuarto ítem en el menú inferior ("Respaldo").
 14. [ ] Pulido visual y funciones secundarias.
+
+**Con esto queda cerrado el MVP completo (los 11 puntos del orden de implementación original).**
 
 ## Completado
 
@@ -106,16 +111,30 @@ Windows.
   entorno); la próxima vez que el usuario abra la app conviene revisar el flujo completo una
   vez en pantalla.
 
-## Pendiente inmediato
+## Estado actual (2026-09-26, fin de sesión 2)
 
-- Construir el módulo de Pendientes/Hallazgos (hoy solo hay una pantalla "próximamente").
-- Construir el registro diario (checklist del día activo) que se habilita al pulsar "INICIAR VISITA".
+El MVP completo de los 11 puntos del orden de implementación está construido y compilando sin
+errores (`npm run typecheck`, `npm run build`, y arranque real de `npm run dev` / `npm run
+preview` verificados en cada módulo). Todavía **no se ha probado clic a clic en un navegador
+real** (no hay herramienta de automatización de navegador en este entorno) — la próxima vez que
+el usuario use la app conviene recorrer el flujo completo una vez en pantalla: crear visita →
+plan → vista previa → enviar a revisión/aprobación → iniciar → Hoy (checklist + fotos) →
+pendientes → reporte → cierre → respaldo.
+
+## Pendiente
+
 - Definir con datos reales de los manuales las plantillas de actividades sugeridas por visita
-  (PA/SC/FL), marcando cada dato como `[FABRICANTE]`, `[BUENA PRÁCTICA]` o `[VALIDAR EN PLANTA]`.
-- Generar íconos reales de la app (actualmente placeholders geométricos) antes de publicar/instalar
-  en iPhone.
+  (PA/SC/FL), marcando cada dato como `[FABRICANTE]`, `[BUENA PRÁCTICA]` o `[VALIDAR EN PLANTA]` —
+  hoy el usuario crea las actividades manualmente en el Plan; sería valioso precargar sugerencias
+  basadas en `reference/extracted/`.
+- Generar íconos reales de la app (actualmente placeholders geométricos generados con Pillow)
+  antes de publicar/instalar en iPhone.
 - Probar la instalación real en iPhone (Add to Home Screen) una vez haya un despliegue accesible
   desde ese dispositivo — hoy la app solo corre en `localhost` de este PC.
+- Pulido visual y funciones secundarias (módulo 14): revisar accesibilidad de contrastes, afinar
+  espaciados en pantallas muy pequeñas, posibles atajos adicionales para uso a una mano.
+- Capa de sincronización corporativa (OneDrive/SharePoint/Listas) sigue sin implementar, tal como
+  se decidió — el respaldo/restauración JSON es el mecanismo de continuidad de datos en esta v1.
 
 ## Decisiones tomadas
 
@@ -134,3 +153,13 @@ Windows.
 - **Git portátil**: se usa el que incluye GitHub Desktop porque `winget`/instaladores requieren
   admin o están bloqueados por política de grupo. No se modificó el PATH del sistema, solo el de
   la sesión de trabajo (ver CLAUDE.md para el comando).
+- **Respaldo en un solo archivo JSON (fotos en base64), no ZIP**: más simple de generar/leer con
+  APIs nativas del navegador (sin librerías adicionales), suficiente para los volúmenes de datos
+  esperados de estas visitas, y fácil de inspeccionar si algo falla.
+- **Historial con motivo obligatorio solo para cambios estructurales del plan** (crear/editar/
+  eliminar/reordenar actividades una vez aprobado el plan), **no para el registro diario en
+  campo**: marcar una actividad como completada o añadir una foto durante la visita activa es el
+  uso normal esperado y debe ser instantáneo, no una excepción que requiera justificación.
+- **Cuarto ítem de navegación "Respaldo"** en vez de esconderlo en un menú de ajustes: dado que
+  todo vive en el navegador de un solo dispositivo, exportar respaldos con frecuencia es crítico
+  y debe ser muy fácil de encontrar.

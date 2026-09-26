@@ -173,3 +173,41 @@ export async function eliminarFoto(id: string): Promise<void> {
   const db = await getDB()
   await db.delete('fotos', id)
 }
+
+// --- Backup / restore ---
+
+export interface DatosCompletos {
+  visitas: Visita[]
+  actividades: Actividad[]
+  pendientes: Pendiente[]
+  historialPlan: CambioHistorial[]
+  fotos: Foto[]
+}
+
+const STORES_BACKUP = ['visitas', 'actividades', 'pendientes', 'historialPlan', 'fotos'] as const
+
+export async function obtenerTodosLosDatos(): Promise<DatosCompletos> {
+  const db = await getDB()
+  const [visitas, actividades, pendientes, historialPlan, fotos] = await Promise.all([
+    db.getAll('visitas'),
+    db.getAll('actividades'),
+    db.getAll('pendientes'),
+    db.getAll('historialPlan'),
+    db.getAll('fotos'),
+  ])
+  return { visitas, actividades, pendientes, historialPlan, fotos }
+}
+
+export async function escribirTodosLosDatos(datos: DatosCompletos, opciones: { limpiarPrimero: boolean }): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(STORES_BACKUP, 'readwrite')
+  if (opciones.limpiarPrimero) {
+    for (const nombre of STORES_BACKUP) await tx.objectStore(nombre).clear()
+  }
+  for (const v of datos.visitas) await tx.objectStore('visitas').put(v)
+  for (const a of datos.actividades) await tx.objectStore('actividades').put(a)
+  for (const p of datos.pendientes) await tx.objectStore('pendientes').put(p)
+  for (const h of datos.historialPlan) await tx.objectStore('historialPlan').put(h)
+  for (const f of datos.fotos) await tx.objectStore('fotos').put(f)
+  await tx.done
+}

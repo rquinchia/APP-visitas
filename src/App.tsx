@@ -12,6 +12,7 @@ import PendienteForm from './pages/PendienteForm'
 import RegistroDiario from './pages/RegistroDiario'
 import Reporte from './pages/Reporte'
 import Cierre from './pages/Cierre'
+import Backup from './pages/Backup'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="pendientes" element={<Pendientes />} />
           <Route path="pendientes/nuevo" element={<PendienteForm />} />
           <Route path="pendientes/:pendienteId/editar" element={<PendienteForm />} />
+          <Route path="backup" element={<Backup />} />
         </Route>
       </Routes>
     </HashRouter>
