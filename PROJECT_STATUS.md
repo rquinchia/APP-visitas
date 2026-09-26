@@ -15,6 +15,23 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Decisión: paso de datos entre dispositivos vía OneDrive (2026-09-26)
+
+El usuario notó (correctamente) que lo registrado en el iPhone no aparece solo en la PC —
+comportamiento esperado en esta arquitectura local-first (ver CLAUDE.md). Se le preguntó
+explícitamente cómo resolverlo, dado que la sincronización automática real requeriría un
+servicio en la nube externo (Firebase/Supabase/similar), algo que el usuario pidió no usar sin
+autorización explícita.
+
+**Decisión del usuario**: usar OneDrive (ya disponible con su Microsoft 365 corporativo, sin
+cuentas ni servicios nuevos) como "cable" para mover el archivo de Respaldo entre dispositivos —
+sigue siendo manual (Exportar → guardar en una carpeta de OneDrive → Importar/Combinar en el
+otro dispositivo), pero el archivo viaja solo entre PC e iPhone sin enviarlo por correo. Se
+actualizó `src/pages/Backup.tsx` con instrucciones claras de este flujo dentro de la propia app.
+**No se descarta** construir sincronización automática real más adelante si el usuario decide
+autorizarlo explícitamente — quedaría como una capa aparte sin rehacer el resto de la app (tal
+como se definió desde el inicio en CLAUDE.md).
+
 ## Pulido visual + confiabilidad offline (2026-09-26, sesión 3)
 
 - **Indicador de conexión + verificación de actualización** (`src/components/EstadoApp.tsx`,

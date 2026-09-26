@@ -87,18 +87,34 @@ export default function Backup() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
+      <section className="rounded-2xl border border-accent/20 bg-accent/5 p-4">
+        <h2 className="text-sm font-semibold text-accent">📁 Cómo pasar información entre tu PC y tu iPhone</h2>
+        <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-600">
+          <li>Crea una carpeta en OneDrive, por ejemplo "Visitas App", accesible desde ambos dispositivos.</li>
+          <li>
+            En el dispositivo donde acabas de trabajar: toca <strong>"Descargar respaldo"</strong> (o
+            <strong> "Compartir" → OneDrive</strong> en iPhone) y guárdalo en esa carpeta.
+          </li>
+          <li>
+            En el otro dispositivo: abre esa misma carpeta de OneDrive, toca <strong>"Elegir archivo"</strong> abajo y
+            selecciona <strong>"Combinar con lo actual"</strong>.
+          </li>
+        </ol>
+        <p className="mt-2 text-xs text-slate-500">
+          No es automático — pero OneDrive mueve el archivo solo entre tus dispositivos, sin que tengas que enviártelo
+          por correo cada vez.
+        </p>
+      </section>
+
       <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h2 className="text-sm font-semibold text-slate-800">Exportar respaldo</h2>
-        <p className="mt-1 text-xs text-slate-500">
-          Guarda todas las visitas, planes, pendientes y fotografías en un solo archivo. Guárdalo en OneDrive, correo o
-          donde acostumbres respaldar tus documentos.
-        </p>
+        <p className="mt-1 text-xs text-slate-500">Guarda todas las visitas, planes, pendientes y fotografías en un solo archivo.</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button onClick={exportar} disabled={exportando} className="rounded-lg bg-accent py-2.5 text-sm font-semibold text-white disabled:opacity-60">
             {exportando ? 'Generando…' : 'Descargar respaldo'}
           </button>
           <button onClick={compartir} className="rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700">
-            Compartir
+            Compartir a OneDrive
           </button>
         </div>
       </section>
