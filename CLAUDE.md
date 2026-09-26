@@ -99,6 +99,30 @@ actividades), etiquetarla siempre como:
 - Ante dos alternativas razonables, elegir la más simple, seria y mantenible sin preguntar.
   Preguntar solo si la decisión afecta costos, seguridad, datos corporativos o una función esencial.
 
+## Publicación (deploy)
+
+- **Repositorio**: `https://github.com/rquinchia/APP-visitas` (público, propiedad de la cuenta
+  `rquinchia`, publicado desde GitHub Desktop — ya con sesión iniciada en ese PC).
+- **App publicada (GitHub Pages)**: `https://rquinchia.github.io/APP-visitas/` — se actualiza
+  sola en 1-2 minutos cada vez que llega un `push` a la rama `master`, vía el workflow
+  `.github/workflows/deploy.yml` (GitHub Actions → build con Vite → despliegue a Pages). En
+  Settings → Pages, "Source" debe quedar en **GitHub Actions** (no "Deploy from a branch").
+- **Importante — cómo subir cambios**: la terminal de este PC tiene credenciales de una cuenta de
+  GitHub distinta (`rdquinchia`) sin permiso de escritura sobre este repo; `git push` desde la
+  terminal falla con 403. Por eso, después de que Claude haga `git commit` localmente, el usuario
+  debe abrir **GitHub Desktop** y darle clic a **"Push origin"** (ya tiene la sesión correcta). No
+  intentar extraer ni configurar credenciales para evitar este paso — el sistema de seguridad de
+  Claude Code bloquea activamente la exploración de credenciales guardadas, y es una restricción
+  correcta que debe respetarse, no evadirse.
+- `vite.config.ts` usa `base: './'` (rutas relativas) a propósito, para que el mismo build sirva
+  igual en la raíz de un dominio (ej. Netlify) o en una subcarpeta de proyecto (GitHub Pages) sin
+  tocar la configuración.
+- **Sin sincronización entre dispositivos**: cada dispositivo (PC, iPhone) tiene su propia copia
+  local en IndexedDB, completamente independiente. Para pasar información de uno a otro, usar
+  siempre el módulo **Respaldo** (exportar en un dispositivo → importar/combinar en el otro). Esto
+  es una decisión de arquitectura de la v1 (ver PROJECT_STATUS.md), no un defecto a corregir sin
+  que el usuario lo pida explícitamente.
+
 ## Comandos útiles
 
 ```powershell

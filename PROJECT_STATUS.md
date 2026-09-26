@@ -15,6 +15,15 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Publicada y en uso (2026-09-26)
+
+- **App en vivo**: https://rquinchia.github.io/APP-visitas/ — confirmada instalada y funcionando
+  en el iPhone del usuario (Agregar a inicio) y accesible desde la PC.
+- **Repositorio**: https://github.com/rquinchia/APP-visitas (público) con publicación automática
+  vía GitHub Actions en cada `push` a `master`. Detalle del flujo de publicación en CLAUDE.md.
+- Cada dispositivo tiene su propia copia local de los datos (sin sincronización automática); el
+  módulo Respaldo es el mecanismo para pasar información entre PC e iPhone.
+
 ## Estado del entorno (Fase 0 — completada)
 
 - Node v24.17.0 / npm 11.13.0: OK.
