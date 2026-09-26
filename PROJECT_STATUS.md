@@ -28,9 +28,11 @@ Windows.
 
 1. [x] Fase 0 — verificación de entorno, manuales y reglas del proyecto.
 2. [x] Andamiaje técnico del proyecto (Vite/React/TS/Tailwind/PWA/IndexedDB) + modelo de datos base.
-3. [ ] Dashboard.
-4. [ ] Gestión de visitas (crear/editar visita, datos generales).
-5. [ ] Plan editable/reordenable (actividades por día, historial de versiones).
+3. [x] Dashboard (resumen de pendientes críticos + tarjeta de avance por visita).
+4. [x] Gestión de visitas: crear (PA/SC/FL con objetivo/duración precargados), listar, ver
+   detalle, editar fecha de inicio y recorrer el ciclo de vida completo (borrador → cerrado)
+   con confirmación y registro en historial en cada paso.
+5. [ ] Plan editable/reordenable (actividades por día, historial de versiones) — sigue.
 6. [ ] Activación de visita ("Iniciar visita").
 7. [ ] Registro diario (checklist, avance, formación, hallazgos, pendientes).
 8. [ ] Fotos (múltiples por actividad/hallazgo/acción/evidencia).
@@ -50,13 +52,29 @@ Windows.
   `reference/extracted/*.txt` (fuente única autorizada de datos técnicos — no se inventan
   parámetros).
 - `CLAUDE.md` con reglas permanentes del proyecto.
+- Proyecto Vite/React/TS/Tailwind/PWA instalado, compila sin errores (`npm run typecheck` y
+  `npm run build` verificados) y sirve correctamente (`npm run preview` probado con petición
+  HTTP real, respuesta 200 OK).
+- Repositorio Git local inicializado con el primer commit (histórico limpio, manuales originales
+  excluidos vía `.gitignore`).
+- Dashboard funcional: tarjetas por visita con estado, día X/X, barra de avance y conteos
+  (completadas/parciales/pendientes/bloqueadas), más resumen global de pendientes
+  (P1/P2/abiertos/sin responsable/sin fecha/vencidos).
+- Gestión de visitas funcional: alta de visita (PA/SC/FL con objetivo y duración precargados
+  desde la definición del proyecto, sin inventar datos), listado, detalle editable (fecha de
+  inicio) y las 10 etapas del ciclo de vida con confirmación explícita y motivo registrado en
+  el historial antes de cada cambio de estado.
 
 ## Pendiente inmediato
 
-- Construir el Dashboard y la gestión de visitas (módulos 3–4) sobre el andamiaje creado.
+- Construir el módulo de Plan editable/reordenable por día (módulo 5) — siguiente paso.
+- Construir el módulo de Pendientes/Hallazgos (hoy solo hay una pantalla "próximamente").
 - Definir con datos reales de los manuales las plantillas de actividades sugeridas por visita
   (PA/SC/FL), marcando cada dato como `[FABRICANTE]`, `[BUENA PRÁCTICA]` o `[VALIDAR EN PLANTA]`.
-- Generar íconos reales de la app (actualmente placeholders) antes de publicar/instalar en iPhone.
+- Generar íconos reales de la app (actualmente placeholders geométricos) antes de publicar/instalar
+  en iPhone.
+- Probar la instalación real en iPhone (Add to Home Screen) una vez haya un despliegue accesible
+  desde ese dispositivo — hoy la app solo corre en `localhost` de este PC.
 
 ## Decisiones tomadas
 
