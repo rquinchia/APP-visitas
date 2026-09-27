@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { generarTextoIA, ErrorIA } from '../lib/ia'
 import { guardarClaveIA, obtenerClaveIA } from '../lib/iaConfig'
+import { PageHeader } from '../components/ui'
 
 export default function Ajustes() {
   const [clave, setClave] = useState(obtenerClaveIA())
@@ -37,6 +38,7 @@ export default function Ajustes() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
+      <PageHeader titulo="Ajustes" atras="/" atrasEtiqueta="Panel" />
       <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h2 className="text-sm font-semibold text-slate-800">✨ Asistente de redacción con IA</h2>
         <p className="mt-1 text-xs text-slate-500">

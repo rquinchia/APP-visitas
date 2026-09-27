@@ -13,6 +13,20 @@ export default {
       fontFamily: {
         sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
+      keyframes: {
+        entrar: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        subir: {
+          '0%': { opacity: '0', transform: 'translateY(24px) scale(0.98)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+      },
+      animation: {
+        entrar: 'entrar 260ms cubic-bezier(0.22, 1, 0.36, 1)',
+        subir: 'subir 320ms cubic-bezier(0.22, 1, 0.36, 1)',
+      },
     },
   },
   plugins: [],

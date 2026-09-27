@@ -4,6 +4,7 @@ import { listarActividadesPorVisita, obtenerVisita } from '../db'
 import type { Actividad, EstadoVisita, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD, TIPOS_VISITA } from '../types'
 import { aplicarTransicionEstado, buscarTransicion } from '../lib/transiciones'
+import { PageHeader } from '../components/ui'
 
 function textoPlano(visita: Visita, actividades: Actividad[]): string {
   const lineas = [`Plan de visita — ${TIPOS_VISITA[visita.tipo].nombre}`, `Planta: ${visita.planta || '—'}`, `Versión: ${visita.version}`, '']
@@ -69,15 +70,12 @@ export default function PlanVistaPrevia() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <button onClick={() => navigate(`/visitas/${visita.id}/plan`)} className="self-start text-sm text-slate-500">
-        ← Editar plan
-      </button>
-
-      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{TIPOS_VISITA[visita.tipo].nombre}</p>
-        <h2 className="text-lg font-semibold text-slate-900">{visita.planta || 'Planta sin definir'}</h2>
-        <p className="text-xs text-slate-500">Vista previa · versión {visita.version}</p>
-      </div>
+      <PageHeader
+        titulo="Vista previa del plan"
+        subtitulo={`${visita.planta || 'Planta sin definir'} · ${TIPOS_VISITA[visita.tipo].nombre} · v${visita.version}`}
+        atras={`/visitas/${visita.id}/plan`}
+        atrasEtiqueta="Editar plan"
+      />
 
       {actividades.length === 0 && (
         <p className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">

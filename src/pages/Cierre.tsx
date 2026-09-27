@@ -1,18 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { AlertTriangle, Camera, CheckCircle2, Copy, GraduationCap, Mail, RotateCcw, Share2, XCircle } from 'lucide-react'
 import { listarActividadesPorVisita, listarFotosPorVisita, listarHistorialPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import {
   copiarHtmlYTexto,
   envolverInformeHTML,
   generarAsuntoInformeFinal,
-  generarInformeFinalOutlook,
   generarInformeFinalOutlookHTML,
   generarResumenFinalWhatsApp,
 } from '../lib/reportes'
 import { blobAThumbnailDataUrl } from '../lib/imagenes'
+import { descargarBorradorOutlook } from '../lib/outlook'
 import { calcularAvance } from '../lib/progreso'
 import { aplicarTransicionEstado, buscarTransicion } from '../lib/transiciones'
 import type { Actividad, CambioHistorial, Foto, Pendiente, Visita } from '../types'
+import { ETIQUETA_ESTADO_ACTIVIDAD } from '../types'
+import { BotonPrimario, BotonSecundario, Card, IconTile, PageHeader, type ColorIcono } from '../components/ui'
+import BarraProgreso from '../components/BarraProgreso'
+import Segmentado from '../components/Segmentado'
+import type { LucideIcon } from 'lucide-react'
 
 const MAX_FOTOS_INFORME_FINAL = 18
 
@@ -34,37 +40,54 @@ export default function Cierre() {
   const [pendientes, setPendientes] = useState<Pendiente[]>([])
   const [fotos, setFotos] = useState<Foto[]>([])
   const [historial, setHistorial] = useState<CambioHistorial[]>([])
+  const [pestana, setPestana] = useState<'informe' | 'whatsapp' | 'historial'>('informe')
   const [confirmando, setConfirmando] = useState(false)
   const [subtituloOutlook, setSubtituloOutlook] = useState('')
-  const [cargandoFotos, setCargandoFotos] = useState(true)
+  const [semillaHtml, setSemillaHtml] = useState('')
+  const [versionSemilla, setVersionSemilla] = useState(0)
+  const [generando, setGenerando] = useState(true)
+  const [textoWhatsApp, setTextoWhatsApp] = useState('')
 
   const cuerpoRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!id) return
-    obtenerVisita(id).then((v) => setVisita(v ?? null))
-    listarActividadesPorVisita(id).then(setActividades)
-    listarPendientesPorVisita(id).then(setPendientes)
-    listarFotosPorVisita(id).then(setFotos)
-    listarHistorialPorVisita(id).then(setHistorial)
-  }, [id])
+    if (cuerpoRef.current) cuerpoRef.current.innerHTML = semillaHtml
+  }, [semillaHtml, versionSemilla, visita])
 
-  async function generarInformeConFotos(v: Visita, acts: Actividad[], pends: Pendiente[], fts: Foto[]) {
-    setCargandoFotos(true)
+  async function generarInforme(v: Visita, acts: Actividad[], pends: Pendiente[], fts: Foto[]) {
+    setGenerando(true)
     const capadas = fts.slice(0, MAX_FOTOS_INFORME_FINAL)
     const dataUrls = (await Promise.all(capadas.map((f) => blobAThumbnailDataUrl(f.blob).catch(() => null)))).filter(
       (u): u is string => !!u,
     )
-    setCargandoFotos(false)
     const { subtitulo, cuerpoHtml } = generarInformeFinalOutlookHTML(v, acts, pends, dataUrls, fts.length)
     setSubtituloOutlook(subtitulo)
-    if (cuerpoRef.current) cuerpoRef.current.innerHTML = cuerpoHtml
+    setSemillaHtml(cuerpoHtml)
+    setVersionSemilla((n) => n + 1)
+    setTextoWhatsApp(generarResumenFinalWhatsApp(v, acts, pends))
+    setGenerando(false)
   }
 
   useEffect(() => {
-    if (visita && fotos) generarInformeConFotos(visita, actividades, pendientes, fotos)
+    if (!id) return
+    async function cargar() {
+      const [v, acts, pends, fts, hist] = await Promise.all([
+        obtenerVisita(id!),
+        listarActividadesPorVisita(id!),
+        listarPendientesPorVisita(id!),
+        listarFotosPorVisita(id!),
+        listarHistorialPorVisita(id!),
+      ])
+      setVisita(v ?? null)
+      setActividades(acts)
+      setPendientes(pends)
+      setFotos(fts)
+      setHistorial(hist)
+      if (v) await generarInforme(v, acts, pends, fts)
+    }
+    cargar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visita, actividades, pendientes, fotos])
+  }, [id])
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visita === null) return <p className="text-sm text-rose-600">Visita no encontrada.</p>
@@ -74,156 +97,208 @@ export default function Cierre() {
   const abiertosVisita = pendientes.filter((p) => p.estado !== 'CERRADO' && p.estado !== 'CANCELADO')
   const cerradosVisita = pendientes.filter((p) => p.estado === 'CERRADO' || p.estado === 'CANCELADO')
   const formacion = actividades.filter((a) => a.tipo.toLowerCase().includes('formaci'))
-
   const asunto = generarAsuntoInformeFinal(visita, actividades)
-  const informeOutlook = generarInformeFinalOutlook(visita, actividades, pendientes, fotos)
-  const resumenWhatsApp = generarResumenFinalWhatsApp(visita, actividades, pendientes)
+  const transicionTerminar = buscarTransicion(visita.estado, 'VISITA_TERMINADA')
 
-  function regenerarInforme() {
-    if (!visita) return
-    if (!window.confirm('Esto reemplaza el informe con la versión generada automáticamente y pierdes tus ediciones. ¿Continuar?')) return
-    generarInformeConFotos(visita, actividades, pendientes, fotos)
+  function htmlFinal(): string | null {
+    if (!cuerpoRef.current || !visita) return null
+    return envolverInformeHTML(visita.planta || 'Planta', subtituloOutlook, cuerpoRef.current.innerHTML)
   }
 
-  async function copiarInformeFinalConFormato() {
-    if (!cuerpoRef.current || !visita) return
-    const html = envolverInformeHTML(visita.planta || 'Planta', subtituloOutlook, cuerpoRef.current.innerHTML)
-    const texto = `${asunto}\n\n${cuerpoRef.current.innerText}`
-    const ok = await copiarHtmlYTexto(html, texto)
-    alert(ok ? 'Informe copiado. Pégalo en Outlook con Ctrl+V (mantiene el formato).' : 'No se pudo copiar automáticamente.')
+  function regenerar() {
+    if (!visita) return
+    if (!window.confirm('Esto vuelve a generar el informe automáticamente y descarta tus ediciones. ¿Continuar?')) return
+    generarInforme(visita, actividades, pendientes, fotos)
+  }
+
+  function abrirEnOutlook() {
+    const html = htmlFinal()
+    if (!html || !visita) return
+    descargarBorradorOutlook(asunto, html, `Informe final ${(visita.planta || 'visita').replace(/[\\/:*?"<>|]/g, '')}`)
+  }
+
+  async function copiarConFormato() {
+    const html = htmlFinal()
+    if (!html || !cuerpoRef.current) return
+    const ok = await copiarHtmlYTexto(html, `${asunto}\n\n${cuerpoRef.current.innerText}`)
+    alert(ok ? 'Informe copiado. Pégalo en un correo nuevo con Ctrl+V.' : 'No se pudo copiar automáticamente.')
+  }
+
+  async function compartirWhatsApp() {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: textoWhatsApp })
+      } catch {
+        // cancelado
+      }
+      return
+    }
+    await copiar(textoWhatsApp)
   }
 
   async function confirmarCierre() {
-    if (!visita) return
-    const transicion = buscarTransicion(visita.estado, 'VISITA_TERMINADA')
-    if (!transicion) return
+    if (!visita || !transicionTerminar) return
     setConfirmando(true)
-    const actualizada = await aplicarTransicionEstado(visita, transicion)
+    const actualizada = await aplicarTransicionEstado(visita, transicionTerminar)
     setConfirmando(false)
     if (actualizada) navigate(`/visitas/${visita.id}`)
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-8">
-      <button onClick={() => navigate(`/visitas/${visita.id}`)} className="self-start text-sm text-slate-500">
-        ← Volver a la visita
-      </button>
+    <div className="flex flex-col gap-4">
+      <PageHeader titulo="Cierre de visita" subtitulo={visita.planta || 'Planta sin definir'} atras={`/visitas/${visita.id}`} atrasEtiqueta="Visita" />
 
-      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Checklist de cierre</p>
-        <h2 className="text-lg font-semibold text-slate-900">{visita.planta || 'Planta sin definir'}</h2>
-        <p className="mt-1 text-sm text-slate-600">Avance final: {avance.porcentaje}%</p>
+      <Card>
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500">Avance final</p>
+            <p className="text-4xl font-bold tracking-tight text-slate-900">{avance.porcentaje}%</p>
+          </div>
+          <p className="text-right text-xs text-slate-500">
+            {avance.completadas} completadas
+            <br />
+            {avance.parciales} parciales · {avance.bloqueadas} bloqueadas
+          </p>
+        </div>
+        <div className="mt-3">
+          <BarraProgreso porcentaje={avance.porcentaje} />
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-2">
+        <Metrica icono={GraduationCap} color="morado" etiqueta="Formación" valor={formacion.length} />
+        <Metrica icono={Camera} color="azul" etiqueta="Fotografías" valor={fotos.length} />
+        <Metrica icono={CheckCircle2} color="verde" etiqueta="Acciones cerradas" valor={cerradosVisita.length} />
+        <Metrica icono={XCircle} color="rojo" etiqueta="Pendientes abiertos" valor={abiertosVisita.length} />
       </div>
 
       {noEjecutadas.length > 0 && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
-          <p className="text-sm font-semibold text-amber-800">⚠ Hay {noEjecutadas.length} actividades sin completar</p>
-          <ul className="mt-2 flex flex-col gap-1 text-xs text-amber-700">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+            <AlertTriangle className="h-4 w-4" /> {noEjecutadas.length} actividades sin completar
+          </p>
+          <ul className="mt-2 space-y-1 text-xs text-amber-700">
             {noEjecutadas.map((a) => (
               <li key={a.id}>
-                Día {a.dia}: {a.actividad} ({a.estado})
+                Día {a.dia}: {a.actividad} · {ETIQUETA_ESTADO_ACTIVIDAD[a.estado]}
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
-        <Resumen etiqueta="Formación realizada" valor={formacion.length} />
-        <Resumen etiqueta="Evidencias (fotos)" valor={fotos.length} />
-        <Resumen etiqueta="Acciones cerradas" valor={cerradosVisita.length} />
-        <Resumen etiqueta="Acciones abiertas" valor={abiertosVisita.length} alerta={abiertosVisita.length > 0} />
-      </div>
-
       {abiertosVisita.length > 0 && (
-        <p className="rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600">
-          Los {abiertosVisita.length} pendientes abiertos <strong>no se cierran</strong> al terminar la visita: pasan a
-          seguimiento post-visita.
+        <p className="rounded-xl bg-slate-200/60 px-3 py-2 text-xs text-slate-600">
+          Los {abiertosVisita.length} pendientes abiertos <strong>no se cierran</strong> al terminar: pasan a seguimiento
+          post-visita.
         </p>
       )}
 
-      <details className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-800">Historial de actividades ({actividades.length})</summary>
-        <ul className="mt-2 flex flex-col gap-1 text-xs text-slate-600">
-          {actividades.map((a) => (
-            <li key={a.id}>
-              Día {a.dia}: {a.actividad} — {a.estado}
-            </li>
-          ))}
-        </ul>
-      </details>
+      <Segmentado
+        opciones={[
+          { valor: 'informe', etiqueta: 'Informe final' },
+          { valor: 'whatsapp', etiqueta: 'WhatsApp' },
+          { valor: 'historial', etiqueta: 'Historial' },
+        ]}
+        valor={pestana}
+        onChange={(v) => setPestana(v as typeof pestana)}
+      />
 
-      <details className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-800">Historial de cambios del plan ({historial.length})</summary>
-        <ul className="mt-2 flex flex-col gap-1 text-xs text-slate-600">
-          {historial.map((h) => (
-            <li key={h.id}>
-              v{h.version} · {h.cambio}
-              {h.motivo && ` — ${h.motivo}`}
-            </li>
-          ))}
-        </ul>
-      </details>
-
-      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <h3 className="mb-2 text-sm font-semibold text-slate-800">Resumen final — WhatsApp</h3>
-        <pre className="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700">{resumenWhatsApp}</pre>
-        <button onClick={() => copiar(resumenWhatsApp)} className="mt-2 w-full rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700">
-          Copiar
-        </button>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-800">Informe final — Outlook (editable)</h3>
-          <button onClick={regenerarInforme} className="text-xs font-medium text-slate-500">
-            Regenerar
-          </button>
+      <div className={pestana === 'informe' ? 'flex flex-col gap-4' : 'hidden'}>
+        <Card className="p-0">
+          <div className="border-b border-slate-100 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Asunto</p>
+            <p className="text-sm font-medium text-slate-800">{asunto}</p>
+          </div>
+          <div className="bg-gradient-to-br from-slate-900 to-sky-800 px-4 py-4 text-white">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-sky-300">Informe de visita técnica</p>
+            <p className="mt-1 text-lg font-bold">{visita.planta || 'Planta'}</p>
+            <p className="text-xs text-sky-100">{subtituloOutlook}</p>
+          </div>
+          {generando && <p className="px-4 pt-3 text-xs text-slate-400">Consolidando todos los días y fotos…</p>}
+          <div
+            ref={cuerpoRef}
+            contentEditable
+            suppressContentEditableWarning
+            className="max-h-[560px] min-h-[160px] overflow-y-auto px-4 py-2 outline-none"
+          />
+          <p className="border-t border-slate-100 px-4 py-2 text-[11px] text-slate-400">
+            ✏️ Toca el texto para editarlo: agrega, quita o corrige lo que necesites.
+          </p>
+        </Card>
+        <BotonPrimario onClick={abrirEnOutlook} disabled={generando}>
+          <Mail className="h-5 w-5" /> Abrir en Outlook
+        </BotonPrimario>
+        <div className="grid grid-cols-2 gap-2">
+          <BotonSecundario onClick={copiarConFormato} disabled={generando}>
+            <Copy className="h-4 w-4" /> Copiar
+          </BotonSecundario>
+          <BotonSecundario onClick={regenerar} disabled={generando}>
+            <RotateCcw className="h-4 w-4" /> Regenerar
+          </BotonSecundario>
         </div>
-        <p className="mb-2 text-xs text-slate-500">
-          Asunto: {asunto}. Toca el informe para editar, agregar o quitar contenido.
-          {cargandoFotos && ' Cargando fotos…'}
-        </p>
+      </div>
 
-        <div
-          ref={cuerpoRef}
-          contentEditable
-          suppressContentEditableWarning
-          className="max-h-[480px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 outline-none focus:ring-2 focus:ring-accent/30"
-        />
+      <div className={pestana === 'whatsapp' ? 'flex flex-col gap-4' : 'hidden'}>
+        <Card className="p-0">
+          <textarea
+            value={textoWhatsApp}
+            onChange={(e) => setTextoWhatsApp(e.target.value)}
+            rows={14}
+            className="w-full resize-none rounded-2xl bg-[#e7f5ec] px-4 py-3 text-[13px] leading-relaxed text-slate-800 outline-none"
+          />
+        </Card>
+        <BotonPrimario tono="verde" onClick={compartirWhatsApp}>
+          <Share2 className="h-5 w-5" /> Compartir
+        </BotonPrimario>
+      </div>
 
-        <button onClick={copiarInformeFinalConFormato} className="mt-2 w-full rounded-lg bg-accent py-2.5 text-sm font-semibold text-white">
-          Copiar informe con formato
-        </button>
+      <div className={pestana === 'historial' ? 'flex flex-col gap-3' : 'hidden'}>
+        <Card>
+          <p className="mb-2 text-sm font-semibold text-slate-800">Actividades ({actividades.length})</p>
+          <ul className="space-y-1.5 text-xs text-slate-600">
+            {actividades.map((a) => (
+              <li key={a.id} className="flex justify-between gap-2">
+                <span className="truncate">
+                  Día {a.dia} · {a.actividad}
+                </span>
+                <span className="shrink-0 text-slate-400">{ETIQUETA_ESTADO_ACTIVIDAD[a.estado]}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+        <Card>
+          <p className="mb-2 text-sm font-semibold text-slate-800">Cambios del plan ({historial.length})</p>
+          <ul className="space-y-1.5 text-xs text-slate-600">
+            {historial.map((h) => (
+              <li key={h.id}>
+                <span className="text-slate-400">v{h.version}</span> · {h.cambio}
+                {h.motivo && <span className="text-slate-400"> — {h.motivo}</span>}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
 
-        <details className="mt-3">
-          <summary className="cursor-pointer text-xs font-medium text-slate-500">Copiar como texto simple</summary>
-          <pre className="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700">{informeOutlook}</pre>
-          <button
-            onClick={() => copiar(`${asunto}\n\n${informeOutlook}`)}
-            className="mt-2 w-full rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700"
-          >
-            Copiar solo texto
-          </button>
-        </details>
-      </section>
-
-      <button
-        onClick={confirmarCierre}
-        disabled={confirmando}
-        className="rounded-xl bg-accent py-3.5 text-sm font-semibold text-white disabled:opacity-60"
-      >
-        Confirmar: TERMINAR VISITA
-      </button>
+      {transicionTerminar && (
+        <div className="mt-2">
+          <BotonPrimario tono="oscuro" onClick={confirmarCierre} disabled={confirmando}>
+            Terminar visita
+          </BotonPrimario>
+        </div>
+      )}
     </div>
   )
 }
 
-function Resumen({ etiqueta, valor, alerta }: { etiqueta: string; valor: number; alerta?: boolean }) {
+function Metrica({ icono, color, etiqueta, valor }: { icono: LucideIcon; color: ColorIcono; etiqueta: string; valor: number }) {
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3 text-center">
-      <div className={`text-lg font-bold ${alerta ? 'text-rose-600' : 'text-slate-900'}`}>{valor}</div>
-      <div className="text-[11px] text-slate-500">{etiqueta}</div>
-    </div>
+    <Card className="flex items-center gap-3 p-3">
+      <IconTile icono={icono} color={color} />
+      <div>
+        <p className="text-xl font-bold leading-none text-slate-900">{valor}</p>
+        <p className="mt-0.5 text-[11px] text-slate-500">{etiqueta}</p>
+      </div>
+    </Card>
   )
 }

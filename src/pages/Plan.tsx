@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { eliminarActividad, guardarActividad, listarActividadesPorVisita, obtenerVisita } from '../db'
 import { ahoraISO } from '../lib/id'
 import { registrarCambioPlan } from '../lib/historial'
@@ -7,10 +7,11 @@ import { diaActual } from '../lib/progreso'
 import type { Actividad, EstadoActividad, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD } from '../types'
 import FotosPicker from '../components/FotosPicker'
+import { ListGroup, ListRow, PageHeader } from '../components/ui'
+import { Eye, Plus, Zap } from 'lucide-react'
 
 export default function Plan() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const [visita, setVisita] = useState<Visita | null | undefined>(undefined)
   const [actividades, setActividades] = useState<Actividad[]>([])
 
@@ -124,38 +125,47 @@ export default function Plan() {
 
   return (
     <div className="flex flex-col gap-4">
-      <button onClick={() => navigate(`/visitas/${visita.id}`)} className="self-start text-sm text-slate-500">
-        ← Volver a la visita
-      </button>
+      <PageHeader
+        titulo="Plan"
+        subtitulo={`${actividades.length} actividades · versión ${visita.version}`}
+        atras={`/visitas/${visita.id}`}
+        atrasEtiqueta="Visita"
+        accion={
+          <Link
+            to={`/visitas/${visita.id}/plan/vista-previa`}
+            className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm"
+          >
+            <Eye className="h-4 w-4" /> Vista previa
+          </Link>
+        }
+      />
 
-      <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <div>
-          <p className="text-sm font-medium text-slate-700">Plan de actividades</p>
-          <p className="text-xs text-slate-500">{actividades.length} actividades · versión {visita.version}</p>
-        </div>
-        <Link
-          to={`/visitas/${visita.id}/plan/vista-previa`}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700"
-        >
-          Vista previa
-        </Link>
-      </div>
-
-      <Link
-        to={`/visitas/${visita.id}/plan/nueva?dia=${diaSugerido}&emergente=1`}
-        className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 py-3 text-sm font-semibold text-amber-700"
-      >
-        ⚡ Actividad emergente (día {diaSugerido})
-      </Link>
+      <ListGroup>
+        <ListRow
+          to={`/visitas/${visita.id}/plan/nueva?dia=${diaSugerido}&emergente=1`}
+          icono={Zap}
+          color="ambar"
+          titulo="Actividad emergente"
+          detalle={`Se agrega al día ${diaSugerido}`}
+        />
+      </ListGroup>
 
       {dias.map((dia) => {
         const delDia = actividades.filter((a) => a.dia === dia).sort((a, b) => a.orden - b.orden)
         return (
-          <section key={dia} className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-800">Día {dia}</h3>
-              <Link to={`/visitas/${visita.id}/plan/nueva?dia=${dia}`} className="text-xs font-medium text-accent">
-                + Añadir
+          <section key={dia} className="rounded-2xl border border-slate-200/70 bg-white p-3 shadow-sm shadow-slate-200/60">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <h3 className="flex items-center gap-2 text-[15px] font-semibold text-slate-800">
+                <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-900 px-1.5 text-[11px] font-bold text-white">
+                  {dia}
+                </span>
+                Día {dia}
+              </h3>
+              <Link
+                to={`/visitas/${visita.id}/plan/nueva?dia=${dia}`}
+                className="flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent"
+              >
+                <Plus className="h-3.5 w-3.5" strokeWidth={3} /> Añadir
               </Link>
             </div>
 

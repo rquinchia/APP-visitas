@@ -7,6 +7,7 @@ import type { Actividad, EstadoActividad, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD, TIPOS_ACTIVIDAD_SUGERIDOS } from '../types'
 import AsistenteIA from '../components/AsistenteIA'
 import FotosPicker from '../components/FotosPicker'
+import { PageHeader } from '../components/ui'
 
 const VACIA: Omit<Actividad, 'id' | 'visitaId' | 'creadoEn' | 'actualizadoEn'> = {
   dia: 1,
@@ -111,14 +112,12 @@ export default function ActividadForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4 pb-8">
-      <button type="button" onClick={() => navigate(`/visitas/${visita.id}/plan`)} className="self-start text-sm text-slate-500">
-        ← Volver al plan
-      </button>
-
-      <h2 className="text-base font-semibold text-slate-900">
-        {esNueva ? 'Nueva actividad' : 'Editar actividad'}
-        {campos.emergente && <span className="ml-2 text-sm font-normal text-amber-600">⚡ emergente</span>}
-      </h2>
+      <PageHeader
+        titulo={esNueva ? 'Nueva actividad' : 'Editar actividad'}
+        subtitulo={campos.emergente ? <span className="font-medium text-amber-600">⚡ Actividad emergente</span> : visita.planta}
+        atras={`/visitas/${visita.id}/plan`}
+        atrasEtiqueta="Plan"
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <Campo etiqueta="Día" tipo="number" min={1} max={visita.duracionDias}

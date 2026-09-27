@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { AlertCircle, Send, Zap } from 'lucide-react'
 import { guardarActividad, listarActividadesPorVisita, obtenerVisita } from '../db'
+import { Card, ListGroup, ListRow, PageHeader, SectionTitle } from '../components/ui'
 import { ahoraISO } from '../lib/id'
 import { calcularAvance, diaActual } from '../lib/progreso'
 import type { Actividad, EstadoActividad, Visita } from '../types'
@@ -21,7 +23,6 @@ const ESTADOS_RAPIDOS: EstadoActividad[] = ['COMPLETADA', 'PARCIAL', 'BLOQUEADA'
 
 export default function RegistroDiario() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const [visita, setVisita] = useState<Visita | null | undefined>(undefined)
   const [actividades, setActividades] = useState<Actividad[]>([])
   const [dia, setDia] = useState(1)
@@ -76,21 +77,17 @@ export default function RegistroDiario() {
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-8">
-      <button onClick={() => navigate(`/visitas/${visita.id}`)} className="self-start text-sm text-slate-500">
-        ← Volver a la visita
-      </button>
-
-      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{visita.planta || 'Planta sin definir'}</p>
-            <h2 className="text-lg font-semibold text-slate-900">Hoy — Día {dia} de {visita.duracionDias}</h2>
-          </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        titulo="Hoy"
+        subtitulo={`${visita.planta || 'Planta sin definir'} · Día ${dia} de ${visita.duracionDias}`}
+        atras={`/visitas/${visita.id}`}
+        atrasEtiqueta="Visita"
+        accion={
           <select
             value={dia}
             onChange={(e) => setDia(Number(e.target.value))}
-            className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm"
           >
             {Array.from({ length: visita.duracionDias }, (_, i) => i + 1).map((d) => (
               <option key={d} value={d}>
@@ -98,63 +95,78 @@ export default function RegistroDiario() {
               </option>
             ))}
           </select>
+        }
+      />
+
+      <Card>
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-xs font-medium text-slate-500">Avance del día</p>
+            <p className="text-3xl font-bold tracking-tight text-slate-900">{avanceDia.porcentaje}%</p>
+          </div>
+          <p className="text-right text-xs text-slate-500">
+            Total visita
+            <br />
+            <span className="text-base font-semibold text-slate-700">{avanceTotal.porcentaje}%</span>
+          </p>
         </div>
         <div className="mt-3">
-          <div className="mb-1 flex justify-between text-xs text-slate-500">
-            <span>Avance del día</span>
-            <span>{avanceDia.porcentaje}%</span>
-          </div>
           <BarraProgreso porcentaje={avanceDia.porcentaje} />
-          <div className="mt-1 flex justify-between text-xs text-slate-400">
-            <span>Avance total de la visita</span>
-            <span>{avanceTotal.porcentaje}%</span>
-          </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Link
-          to={`/visitas/${visita.id}/plan/nueva?dia=${dia}&emergente=1`}
-          className="flex items-center justify-center gap-1 rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 py-3 text-xs font-semibold text-amber-700"
-        >
-          ⚡ Actividad emergente
-        </Link>
-        <Link
+      <ListGroup>
+        <ListRow
+          to={`/visitas/${visita.id}/reporte?dia=${dia}`}
+          icono={Send}
+          color="indigo"
+          titulo="Reporte del día"
+          detalle="WhatsApp y Outlook, con fotos"
+        />
+        <ListRow
           to={`/pendientes/nuevo?visitaId=${visita.id}`}
-          className="flex items-center justify-center gap-1 rounded-xl border-2 border-dashed border-rose-300 bg-rose-50 py-3 text-xs font-semibold text-rose-700"
-        >
-          📌 Hallazgo / pendiente
-        </Link>
-      </div>
+          icono={AlertCircle}
+          color="rojo"
+          titulo="Registrar hallazgo o pendiente"
+        />
+        <ListRow
+          to={`/visitas/${visita.id}/plan/nueva?dia=${dia}&emergente=1`}
+          icono={Zap}
+          color="ambar"
+          titulo="Añadir actividad emergente"
+        />
+      </ListGroup>
 
-      <Link
-        to={`/visitas/${visita.id}/reporte?dia=${dia}`}
-        className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white active:bg-slate-800"
-      >
-        📤 Generar reporte del día
-      </Link>
+      <SectionTitle>Actividades del día {dia}</SectionTitle>
 
       {delDia.length === 0 && (
-        <p className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
+        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
           No hay actividades planificadas para este día.
         </p>
       )}
 
-      <div className="flex flex-col gap-3">
-        {delDia.map((a) => (
-          <div key={a.id} className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-            <p className="text-sm font-semibold text-slate-900">
-              {a.emergente && <span className="mr-1 text-amber-500">⚡</span>}
-              {a.actividad}
-            </p>
-            {a.objetivo && <p className="mt-0.5 text-xs text-slate-500">{a.objetivo}</p>}
+      <div className="-mt-2 flex flex-col gap-3">
+        {delDia.map((a, i) => (
+          <Card key={a.id} className={`border-l-4 ${BORDE_ESTADO[a.estado]}`}>
+            <div className="flex items-start gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-semibold leading-snug text-slate-900">
+                  {a.emergente && <Zap className="mr-1 inline h-4 w-4 text-amber-500" />}
+                  {a.actividad}
+                </p>
+                {a.objetivo && <p className="mt-0.5 text-xs text-slate-500">{a.objetivo}</p>}
+              </div>
+            </div>
 
             <div className="mt-3 flex flex-wrap gap-1.5">
               {ESTADOS_RAPIDOS.map((estado) => (
                 <button
                   key={estado}
                   onClick={() => marcarEstado(a, estado)}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                     a.estado === estado ? ESTILOS_ESTADO[estado] : 'border-slate-200 bg-white text-slate-500'
                   }`}
                 >
@@ -169,15 +181,24 @@ export default function RegistroDiario() {
               onBlur={() => guardarComentario(a)}
               placeholder="Comentario corto…"
               rows={2}
-              className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-3 w-full rounded-xl border-0 bg-slate-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent/30"
             />
 
             <div className="mt-3">
               <FotosPicker visitaId={visita.id} entidadTipo="ACTIVIDAD" entidadId={a.id} />
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
   )
+}
+
+const BORDE_ESTADO: Record<EstadoActividad, string> = {
+  PENDIENTE: 'border-l-slate-200',
+  EN_PROGRESO: 'border-l-sky-400',
+  COMPLETADA: 'border-l-emerald-500',
+  PARCIAL: 'border-l-amber-400',
+  BLOQUEADA: 'border-l-rose-500',
+  NO_APLICA: 'border-l-slate-300',
 }

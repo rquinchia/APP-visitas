@@ -6,6 +6,8 @@ import { FECHA_POR_DEFECTO, RESPONSABLE_POR_DEFECTO, TIPOS_VISITA } from '../typ
 import EstadoBadge from '../components/EstadoBadge'
 import BarraProgreso from '../components/BarraProgreso'
 import { calcularAvance, diaActual, type ResumenAvance } from '../lib/progreso'
+import { PageHeader, SectionTitle } from '../components/ui'
+import { Plus } from 'lucide-react'
 
 interface VisitaConAvance {
   visita: Visita
@@ -59,7 +61,18 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link to="/pendientes" className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-3 active:bg-slate-50">
+      <PageHeader
+        titulo="Panel"
+        subtitulo={new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })}
+        accion={
+          <Link to="/visitas/nueva" aria-label="Nueva visita" className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white shadow-md shadow-accent/30">
+            <Plus className="h-5 w-5" strokeWidth={2.6} />
+          </Link>
+        }
+      />
+
+      <SectionTitle>Pendientes</SectionTitle>
+      <Link to="/pendientes" className="-mt-2 grid grid-cols-3 gap-2 rounded-2xl border border-slate-200/70 bg-white p-3 shadow-sm shadow-slate-200/60">
         <ResumenCelda etiqueta="P1 críticos" valor={rp.p1} alerta={rp.p1 > 0} />
         <ResumenCelda etiqueta="P2 altos" valor={rp.p2} alerta={rp.p2 > 0} />
         <ResumenCelda etiqueta="Abiertos" valor={rp.abiertos} />
@@ -68,11 +81,13 @@ export default function Dashboard() {
         <ResumenCelda etiqueta="Vencidos" valor={rp.vencidos} alerta={rp.vencidos > 0} />
       </Link>
 
+      <SectionTitle>Visitas en curso</SectionTitle>
+
       {activas.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center">
+        <div className="-mt-2 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
           <p className="text-sm text-slate-500">Todavía no hay visitas creadas.</p>
-          <Link to="/visitas/nueva" className="mt-3 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white">
-            Crear la primera visita
+          <Link to="/visitas/nueva" className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-accent/30">
+            <Plus className="h-4 w-4" strokeWidth={3} /> Crear la primera visita
           </Link>
         </div>
       )}
@@ -83,7 +98,7 @@ export default function Dashboard() {
           <Link
             key={visita.id}
             to={`/visitas/${visita.id}`}
-            className="block rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4 shadow-sm active:bg-slate-50"
+            className="-mt-1 block rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm shadow-slate-200/60"
           >
             <div className="flex items-start justify-between gap-2">
               <div>

@@ -15,6 +15,27 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Rediseño tipo iOS + "Abrir en Outlook" (2026-09-26)
+
+- **Bug corregido**: el informe de Outlook aparecía vacío. Causa: el HTML se escribía en el
+  `div` editable antes de que existiera en pantalla (si no había fotos, la generación terminaba
+  antes del primer render). Ahora el contenido se guarda en estado (`semillaHtml`) y un
+  `useEffect` lo escribe cuando el `div` ya está montado. Las pestañas se ocultan con `hidden`
+  en vez de desmontarse, para no perder las ediciones al cambiar de pestaña.
+- **"Abrir en Outlook"** (`src/lib/outlook.ts`): genera un borrador `.eml` (MIME
+  `multipart/related`, cabecera `X-Unsent: 1`) con el informe HTML y las fotos incrustadas como
+  adjuntos en línea (`cid:`), no como `data:` (Outlook de escritorio bloquea `data:`). Al abrir
+  el archivo descargado en Windows, Outlook lo abre como correo nuevo listo para enviar. Validado
+  con el parser `email` de Python (asunto con tildes, HTML y 2 imágenes correctos).
+- **Rediseño de navegación** (el usuario comentó que "se pierde"): componentes en
+  `src/components/ui.tsx` (`PageHeader` con botón atrás + título grande, `ListGroup`/`ListRow`
+  tipo Ajustes de iOS, `IconTile`, botones), `Segmentado.tsx` (pestañas iOS), íconos
+  `lucide-react` (nueva dependencia, MIT), animación de entrada entre pantallas, notificaciones
+  flotantes para conexión/actualización. `VisitaDetalle` es ahora un centro de control: avance,
+  indicador de fase (Planificación → Aprobación → En planta → Cierre), tarjeta "Siguiente paso"
+  que explica qué hacer en cada estado, y mosaicos grandes (Hoy, Plan, Pendientes, Reporte,
+  Informe final).
+
 ## Fotos reales y edición del informe (2026-09-26, feedback del usuario)
 
 El usuario probó el informe de Outlook en un correo real (con éxito — el copiado con formato

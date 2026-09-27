@@ -15,6 +15,7 @@ import {
 } from '../types'
 import FotosPicker from '../components/FotosPicker'
 import AsistenteIA from '../components/AsistenteIA'
+import { PageHeader } from '../components/ui'
 
 const VACIO = {
   visitaId: '',
@@ -122,11 +123,12 @@ export default function PendienteForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4 pb-8">
-      <button type="button" onClick={() => navigate('/pendientes')} className="self-start text-sm text-slate-500">
-        ← Volver a pendientes
-      </button>
-
-      <h2 className="text-base font-semibold text-slate-900">{esNuevo ? 'Nuevo pendiente' : 'Editar pendiente'}</h2>
+      <PageHeader
+        titulo={esNuevo ? 'Nuevo pendiente' : 'Editar pendiente'}
+        subtitulo={esNuevo ? 'Primero guárdalo; luego podrás adjuntar fotos.' : undefined}
+        atras="/pendientes"
+        atrasEtiqueta="Pendientes"
+      />
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">Visita / planta</label>

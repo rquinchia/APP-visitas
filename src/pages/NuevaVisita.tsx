@@ -4,6 +4,7 @@ import { guardarVisita } from '../db'
 import { generarId, ahoraISO } from '../lib/id'
 import type { TipoVisita, Visita } from '../types'
 import { TIPOS_VISITA } from '../types'
+import { PageHeader } from '../components/ui'
 
 export default function NuevaVisita() {
   const navigate = useNavigate()
@@ -37,6 +38,7 @@ export default function NuevaVisita() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <PageHeader titulo="Nueva visita" subtitulo="Elige el tipo y completa los datos básicos." atras="/visitas" atrasEtiqueta="Visitas" />
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">Tipo de visita</label>
         <div className="grid grid-cols-1 gap-2">

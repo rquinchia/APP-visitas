@@ -4,6 +4,8 @@ import { listarTodosPendientes, listarVisitas } from '../db'
 import type { EstadoPendiente, Pendiente, PrioridadPendiente, Visita } from '../types'
 import { ESTADOS_PENDIENTE, FECHA_POR_DEFECTO, PRIORIDADES_PENDIENTE, RESPONSABLE_POR_DEFECTO } from '../types'
 import { PrioridadBadge, EstadoPendienteBadge } from '../components/PendienteBadges'
+import { PageHeader } from '../components/ui'
+import { Plus } from 'lucide-react'
 
 const ORDEN_PRIORIDAD: Record<PrioridadPendiente, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
 
@@ -48,21 +50,27 @@ export default function Pendientes() {
 
   return (
     <div className="flex flex-col gap-4">
-      {visitaIdFiltro && (
-        <div className="flex items-center justify-between rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600">
-          <span>Mostrando solo: {nombrePlanta(visitaIdFiltro)}</span>
-          <Link to="/pendientes" className="font-medium text-accent">
-            Ver todos
-          </Link>
-        </div>
-      )}
+      <PageHeader
+        titulo="Pendientes"
+        subtitulo={visitaIdFiltro ? nombrePlanta(visitaIdFiltro) : 'Hallazgos y acciones de todas las visitas'}
+        atras={visitaIdFiltro ? `/visitas/${visitaIdFiltro}` : undefined}
+        atrasEtiqueta="Visita"
+        accion={
+          <button
+            onClick={onNuevo}
+            aria-label="Nuevo pendiente"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white shadow-md shadow-accent/30"
+          >
+            <Plus className="h-5 w-5" strokeWidth={2.6} />
+          </button>
+        }
+      />
 
-      <button
-        onClick={onNuevo}
-        className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-accent/50 bg-accent/5 py-3 text-sm font-semibold text-accent active:bg-accent/10"
-      >
-        + Nuevo pendiente
-      </button>
+      {visitaIdFiltro && (
+        <Link to="/pendientes" className="-mt-2 self-start rounded-full bg-slate-200/70 px-3 py-1 text-xs font-medium text-slate-600">
+          Ver pendientes de todas las visitas
+        </Link>
+      )}
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         <select

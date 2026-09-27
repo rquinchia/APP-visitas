@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generarRespaldo, leerArchivoRespaldo, restaurarRespaldo, resumirRespaldo, type ResumenRespaldo } from '../lib/backup'
+import { PageHeader } from '../components/ui'
 
 function nombreArchivoRespaldo() {
   return `visitas-respaldo-${new Date().toISOString().slice(0, 10)}.json`
@@ -87,6 +88,7 @@ export default function Backup() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
+      <PageHeader titulo="Respaldo" subtitulo="Guarda y pasa tu información entre PC e iPhone" />
       <section className="rounded-2xl border border-accent/20 bg-accent/5 p-4">
         <h2 className="text-sm font-semibold text-accent">📁 Cómo pasar información entre tu PC y tu iPhone</h2>
         <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-600">
