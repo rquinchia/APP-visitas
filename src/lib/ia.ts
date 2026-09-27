@@ -1,7 +1,7 @@
 import { obtenerClaveIA } from './iaConfig'
 
-const MODELO = 'gpt-4o-mini'
-const URL_API = 'https://api.openai.com/v1/chat/completions'
+const MODELO = 'gemini-2.0-flash'
+const URL_API = `https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent`
 
 const PROMPT_SISTEMA =
   'Eres un asistente que ayuda a redactar textos breves y profesionales en español para reportes de visitas ' +
@@ -19,38 +19,48 @@ export class ErrorIA extends Error {}
 
 export async function generarTextoIA(historial: MensajeIA[]): Promise<string> {
   const clave = obtenerClaveIA()
-  if (!clave) throw new ErrorIA('No has configurado tu clave de OpenAI. Ve a Ajustes para agregarla.')
+  if (!clave) throw new ErrorIA('No has configurado tu clave de Google Gemini. Ve a Ajustes para agregarla.')
+
+  const contents = historial.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }],
+  }))
 
   let respuesta: Response
   try {
-    respuesta = await fetch(URL_API, {
+    respuesta = await fetch(`${URL_API}?key=${encodeURIComponent(clave)}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${clave}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: MODELO,
-        messages: [{ role: 'system', content: PROMPT_SISTEMA }, ...historial],
-        temperature: 0.5,
-        max_tokens: 400,
+        contents,
+        systemInstruction: { parts: [{ text: PROMPT_SISTEMA }] },
+        generationConfig: { temperature: 0.5, maxOutputTokens: 400 },
       }),
     })
   } catch {
     throw new ErrorIA(
-      'No se pudo conectar con OpenAI. Revisa tu conexión a internet. Si el problema persiste, puede que el navegador ' +
-        'esté bloqueando la conexión directa — avísale a Claude para revisarlo.',
+      'No se pudo conectar con Google Gemini. Revisa tu conexión a internet. Si el problema persiste, avísale a Claude ' +
+        'para revisarlo (puede ser un bloqueo del navegador).',
     )
   }
 
   if (!respuesta.ok) {
-    if (respuesta.status === 401) throw new ErrorIA('La clave de OpenAI no es válida. Revísala en Ajustes.')
-    if (respuesta.status === 429) throw new ErrorIA('Se alcanzó el límite de uso de tu cuenta de OpenAI. Intenta más tarde o revisa tu plan.')
-    throw new ErrorIA(`OpenAI respondió con un error (código ${respuesta.status}). Intenta de nuevo.`)
+    let detalle = ''
+    try {
+      const cuerpo = await respuesta.json()
+      detalle = cuerpo?.error?.message ?? ''
+    } catch {
+      // sin cuerpo JSON legible
+    }
+    if (respuesta.status === 400 && detalle.toLowerCase().includes('api key')) {
+      throw new ErrorIA('La clave de Google Gemini no es válida. Revísala en Ajustes.')
+    }
+    if (respuesta.status === 429) throw new ErrorIA('Se alcanzó el límite gratuito de uso por ahora. Intenta de nuevo en unos minutos.')
+    throw new ErrorIA(`Google Gemini respondió con un error (código ${respuesta.status})${detalle ? `: ${detalle}` : ''}.`)
   }
 
   const datos = await respuesta.json()
-  const texto = datos?.choices?.[0]?.message?.content?.trim()
-  if (!texto) throw new ErrorIA('OpenAI no devolvió texto. Intenta de nuevo.')
+  const texto = datos?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+  if (!texto) throw new ErrorIA('Gemini no devolvió texto. Intenta de nuevo.')
   return texto
 }

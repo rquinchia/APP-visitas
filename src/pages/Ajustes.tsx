@@ -40,18 +40,18 @@ export default function Ajustes() {
       <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h2 className="text-sm font-semibold text-slate-800">✨ Asistente de redacción con IA</h2>
         <p className="mt-1 text-xs text-slate-500">
-          Usa tu propia cuenta de OpenAI. La clave se guarda solo en este dispositivo (nunca se sube a ningún lado). Al
-          usar el asistente, el texto que escribas se envía a los servidores de OpenAI para generar la respuesta —
-          ten esto presente con información sensible.
+          Usa tu propia cuenta de Google (Gemini), gratis. La clave se guarda solo en este dispositivo (nunca se sube a
+          ningún lado). Al usar el asistente, el texto que escribas se envía a los servidores de Google para generar
+          la respuesta — ten esto presente con información sensible.
         </p>
 
-        <label className="mb-1 mt-3 block text-xs font-medium text-slate-600">Clave de API de OpenAI</label>
+        <label className="mb-1 mt-3 block text-xs font-medium text-slate-600">Clave de API de Google Gemini</label>
         <div className="flex gap-2">
           <input
             type={mostrar ? 'text' : 'password'}
             value={clave}
             onChange={(e) => setClave(e.target.value)}
-            placeholder="sk-..."
+            placeholder="AIza..."
             className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             autoComplete="off"
           />
@@ -84,12 +84,12 @@ export default function Ajustes() {
         )}
 
         <details className="mt-3">
-          <summary className="cursor-pointer text-xs font-medium text-slate-500">¿Cómo consigo mi clave de OpenAI?</summary>
+          <summary className="cursor-pointer text-xs font-medium text-slate-500">¿Cómo consigo mi clave gratis de Google Gemini?</summary>
           <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-600">
-            <li>Entra a platform.openai.com y crea una cuenta (o inicia sesión).</li>
-            <li>Ve a "API keys" (menú de tu cuenta) → "Create new secret key".</li>
-            <li>Copia la clave (empieza con "sk-") y pégala arriba.</li>
-            <li>Agrega un método de pago en "Billing" — el uso de este asistente cuesta centavos de dólar por redacción.</li>
+            <li>Entra a aistudio.google.com e inicia sesión con tu cuenta de Google.</li>
+            <li>Busca "Get API key" → "Create API key".</li>
+            <li>Copia la clave (empieza con "AIza") y pégala arriba.</li>
+            <li>No necesitas tarjeta de crédito — el nivel gratuito alcanza para este uso.</li>
           </ol>
         </details>
       </section>

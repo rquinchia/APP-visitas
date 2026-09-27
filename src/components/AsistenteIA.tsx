@@ -30,7 +30,7 @@ export default function AsistenteIA({ contexto, valorActual, onInsertar }: Props
     return (
       <p className="mt-1 text-[11px] text-slate-400">
         <Link to="/ajustes" className="font-medium text-accent underline">
-          Configura tu clave de OpenAI
+          Configura tu clave de Gemini
         </Link>{' '}
         para usar el asistente de redacción (✨).
       </p>

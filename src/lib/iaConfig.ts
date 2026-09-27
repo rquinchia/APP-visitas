@@ -1,4 +1,4 @@
-const CLAVE_STORAGE = 'ia_openai_api_key'
+const CLAVE_STORAGE = 'ia_gemini_api_key'
 
 export function obtenerClaveIA(): string {
   try {

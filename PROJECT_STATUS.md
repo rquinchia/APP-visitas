@@ -22,28 +22,28 @@ El usuario pidió un asistente tipo "chat" por campo para ayudar a redactar/mejo
 Se le preguntó explícitamente antes de construir, porque implica enviar texto a un proveedor de
 IA externo (dato potencialmente corporativo) y tiene costo de uso.
 
-**Decisión del usuario**: sí, usando **OpenAI (ChatGPT)** con su propia cuenta/clave de API.
+**Decisión del usuario**: inicialmente OpenAI (ChatGPT), pero el usuario aclaró que su plan
+"ChatGPT Business" no incluye acceso a la API (son productos distintos con facturación separada)
+y no busca pagar. Se le ofrecieron alternativas y **eligió cambiar a Google Gemini**, que sí
+tiene un nivel gratuito real (sin tarjeta de crédito) suficiente para este uso.
 
 **Cómo se implementó** (respetando "sin servidor obligatorio" — llamada directa desde el
 navegador, sin backend propio):
-- `src/pages/Ajustes.tsx`: el usuario pega su propia clave de OpenAI (`sk-...`), guardada
-  únicamente en `localStorage` de ese dispositivo (nunca en el código ni en el repositorio —
-  clave distinta por dispositivo). Incluye un botón "Probar conexión".
-- `src/lib/ia.ts`: llama a `https://api.openai.com/v1/chat/completions` (modelo `gpt-4o-mini`)
-  directamente desde el navegador con la clave guardada.
+- `src/pages/Ajustes.tsx`: el usuario pega su propia clave de Google Gemini (`AIza...`, gratis
+  desde aistudio.google.com), guardada únicamente en `localStorage` de ese dispositivo (nunca en
+  el código ni en el repositorio — clave distinta por dispositivo). Incluye botón "Probar conexión".
+- `src/lib/ia.ts`: llama a `https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent`
+  (modelo `gemini-2.0-flash`) directamente desde el navegador con la clave guardada como parámetro
+  de la URL. La API de Gemini está diseñada para uso directo desde clientes/navegador (a
+  diferencia de la de OpenAI), por lo que el riesgo de bloqueo CORS es menor.
 - `src/components/AsistenteIA.tsx`: componente reutilizable tipo mini-chat (pedir → sugerencia →
   ajustar/usar/cancelar), integrado en los campos "Descripción" y "Acción propuesta" de
   Pendientes, y "Objetivo"/"Observación" de Actividades.
 
-**⚠️ Riesgo técnico pendiente de validar con el usuario**: las APIs de OpenAI históricamente no
-siempre permiten llamadas directas desde el navegador (CORS), ya que se diseñaron asumiendo un
-backend intermediario (por eso ellos mismos recomiendan no exponer la clave en el cliente). Esta
-sesión no pudo probar una llamada real desde un navegador. **Si al usar "Probar conexión" el
-usuario ve un error de red/CORS**, la clave y la cuenta están bien — lo que fallaría es esta
-arquitectura sin servidor. En ese caso, el plan B (ya conversado como posibilidad, no
-implementado) sería un pequeño proxy serverless gratuito (ej. Cloudflare Workers) que reenvíe la
-solicitud — agregaría un componente de infraestructura mínimo, a decidir con el usuario si se
-llega a ese punto.
+**Pendiente de confirmar con el usuario**: probar "Probar conexión" en Ajustes con una clave real
+de Gemini para validar que funciona de punta a punta. Si `gemini-2.0-flash` ya no fuera un nombre
+de modelo válido para su cuenta, el error de la API lo diría explícitamente (visible en el mensaje
+de "Probar conexión") y es un cambio de una sola línea en `src/lib/ia.ts` corregirlo.
 
 ## Decisión: paso de datos entre dispositivos vía OneDrive (2026-09-26)
 
