@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { listarActividadesPorVisita, listarFotosPorVisita, listarHistorialPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import {
+  copiarHtmlYTexto,
   generarAsuntoInformeFinal,
   generarInformeFinalOutlook,
+  generarInformeFinalOutlookHTML,
   generarResumenFinalWhatsApp,
 } from '../lib/reportes'
 import { calcularAvance } from '../lib/progreso'
@@ -50,7 +52,13 @@ export default function Cierre() {
 
   const asunto = generarAsuntoInformeFinal(visita, actividades)
   const informeOutlook = generarInformeFinalOutlook(visita, actividades, pendientes, fotos)
+  const informeOutlookHtml = generarInformeFinalOutlookHTML(visita, actividades, pendientes, fotos)
   const resumenWhatsApp = generarResumenFinalWhatsApp(visita, actividades, pendientes)
+
+  async function copiarInformeFinalConFormato() {
+    const ok = await copiarHtmlYTexto(informeOutlookHtml, `${asunto}\n\n${informeOutlook}`)
+    alert(ok ? 'Informe copiado. Pégalo en Outlook con Ctrl+V (mantiene el formato).' : 'No se pudo copiar automáticamente.')
+  }
 
   async function confirmarCierre() {
     if (!visita) return
@@ -134,14 +142,23 @@ export default function Cierre() {
 
       <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
         <h3 className="mb-2 text-sm font-semibold text-slate-800">Informe final — Outlook</h3>
-        <p className="mb-1 text-xs text-slate-500">Asunto: {asunto}</p>
-        <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700">{informeOutlook}</pre>
-        <button
-          onClick={() => copiar(`${asunto}\n\n${informeOutlook}`)}
-          className="mt-2 w-full rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700"
-        >
-          Copiar
+        <p className="mb-2 text-xs text-slate-500">Asunto: {asunto}</p>
+        <div className="overflow-hidden rounded-lg border border-slate-200">
+          <iframe title="Vista previa del informe final" srcDoc={informeOutlookHtml} className="h-[420px] w-full bg-slate-100" sandbox="" />
+        </div>
+        <button onClick={copiarInformeFinalConFormato} className="mt-2 w-full rounded-lg bg-accent py-2.5 text-sm font-semibold text-white">
+          Copiar informe con formato
         </button>
+        <details className="mt-3">
+          <summary className="cursor-pointer text-xs font-medium text-slate-500">Copiar como texto simple</summary>
+          <pre className="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700">{informeOutlook}</pre>
+          <button
+            onClick={() => copiar(`${asunto}\n\n${informeOutlook}`)}
+            className="mt-2 w-full rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700"
+          >
+            Copiar solo texto
+          </button>
+        </details>
       </section>
 
       <button

@@ -1,4 +1,4 @@
-import type { Actividad, Foto, Pendiente, Visita } from '../types'
+import type { Actividad, Foto, Pendiente, PrioridadPendiente, Visita } from '../types'
 import { FECHA_POR_DEFECTO, RESPONSABLE_POR_DEFECTO } from '../types'
 import { calcularAvance } from './progreso'
 
@@ -8,6 +8,136 @@ function abiertos(pendientes: Pendiente[]) {
 
 function truncar(texto: string, max: number): string {
   return texto.length > max ? texto.slice(0, max - 1).trimEnd() + '…' : texto
+}
+
+// --- Constructor de informes HTML (Outlook) con estándar visual consistente ---
+
+function escaparHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+const COLOR_PRIORIDAD: Record<PrioridadPendiente, string> = {
+  P1: '#e11d48',
+  P2: '#f97316',
+  P3: '#eab308',
+  P4: '#94a3b8',
+}
+
+function listaHtml(items: string[], vacio: string): string {
+  if (items.length === 0) {
+    return `<p style="margin:0;color:#64748b;">${escaparHtml(vacio)}</p>`
+  }
+  return `<ul style="margin:0;padding-left:18px;">${items
+    .map((i) => `<li style="margin-bottom:4px;">${escaparHtml(i)}</li>`)
+    .join('')}</ul>`
+}
+
+function tablaPendientesHtml(pendientes: Pendiente[]): string {
+  if (pendientes.length === 0) return ''
+  const filas = pendientes
+    .map(
+      (p) => `
+      <tr>
+        <td style="padding:8px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#64748b;">${escaparHtml(p.id.slice(0, 8))}</td>
+        <td style="padding:8px;border-bottom:1px solid #e2e8f0;">
+          <span style="display:inline-block;background:${COLOR_PRIORIDAD[p.prioridad]};color:#ffffff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;">${p.prioridad}</span>
+        </td>
+        <td style="padding:8px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#1e293b;">${escaparHtml(p.descripcion)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#334155;">${escaparHtml(p.responsable)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#334155;">${escaparHtml(p.fechaCompromiso)}</td>
+        <td style="padding:8px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#334155;">${escaparHtml(p.estado)}</td>
+      </tr>`,
+    )
+    .join('')
+
+  return `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#0284c7;text-transform:uppercase;letter-spacing:.04em;">📌 Pendientes</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-family:inherit;">
+      <thead>
+        <tr style="background:#f1f5f9;">
+          <th style="padding:8px;text-align:left;font-size:11px;color:#64748b;">ID</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:#64748b;">Prioridad</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:#64748b;">Pendiente</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:#64748b;">Responsable</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:#64748b;">Fecha</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:#64748b;">Estado</th>
+        </tr>
+      </thead>
+      <tbody>${filas}</tbody>
+    </table>`
+}
+
+/**
+ * Copia texto enriquecido (HTML) al portapapeles junto con su versión de texto plano como
+ * respaldo, para que al pegar en Outlook se vea formateado y, si el destino no admite HTML,
+ * caiga al texto plano. Si el navegador no admite copiar HTML, copia solo el texto plano.
+ */
+export async function copiarHtmlYTexto(html: string, textoPlano: string): Promise<boolean> {
+  try {
+    if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+      const item = new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([textoPlano], { type: 'text/plain' }),
+      })
+      await navigator.clipboard.write([item])
+      return true
+    }
+  } catch {
+    // continúa al respaldo de texto plano
+  }
+  try {
+    await navigator.clipboard.writeText(textoPlano)
+    return true
+  } catch {
+    return false
+  }
+}
+
+interface SeccionInforme {
+  icono: string
+  titulo: string
+  contenidoHtml: string
+}
+
+function construirEmailHTML(opts: { planta: string; subtitulo: string; secciones: SeccionInforme[]; tablaPendientesHtml?: string }): string {
+  const filasSecciones = opts.secciones
+    .map(
+      (s) => `
+      <tr>
+        <td style="padding:16px 20px 4px;">
+          <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#0284c7;text-transform:uppercase;letter-spacing:.04em;">${s.icono} ${escaparHtml(s.titulo)}</p>
+          <div style="font-size:14px;line-height:1.55;color:#1e293b;">${s.contenidoHtml}</div>
+        </td>
+      </tr>`,
+    )
+    .join('')
+
+  return `<!doctype html>
+<html>
+  <body style="margin:0;background:#e2e8f0;padding:20px 0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;">
+      <tr>
+        <td style="background:#0f172a;background:linear-gradient(135deg,#0f172a,#0369a1);padding:24px 20px;">
+          <p style="margin:0;color:#7dd3fc;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Informe de visita técnica</p>
+          <p style="margin:6px 0 0;color:#ffffff;font-size:22px;font-weight:700;">${escaparHtml(opts.planta)}</p>
+          <p style="margin:4px 0 0;color:#bae6fd;font-size:13px;">${escaparHtml(opts.subtitulo)}</p>
+        </td>
+      </tr>
+      ${filasSecciones}
+      ${opts.tablaPendientesHtml ? `<tr><td style="padding:16px 20px 4px;">${opts.tablaPendientesHtml}</td></tr>` : ''}
+      <tr>
+        <td style="padding:18px 20px;text-align:center;">
+          <p style="margin:0;color:#94a3b8;font-size:11px;">Generado con la app de Visitas Técnicas</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`
 }
 
 // --- WhatsApp: reporte visual, ejecutivo y compacto ---
@@ -43,22 +173,22 @@ export function generarReporteWhatsApp(visita: Visita, actividadesDia: Actividad
   const sinDueño = abiertosVisita.some((p) => p.responsable === RESPONSABLE_POR_DEFECTO || p.fechaCompromiso === FECHA_POR_DEFECTO)
 
   const lineas = [
-    `📍 ${visita.planta || 'Planta'} | Día ${dia}/${visita.duracionDias}`,
-    `📊 Avance: ${avance.porcentaje}%`,
+    `📍 *${visita.planta || 'Planta'}* | Día ${dia}/${visita.duracionDias}`,
+    `📊 Avance: *${avance.porcentaje}%*`,
     '',
-    '✅ EJECUTADO',
+    '*✅ EJECUTADO*',
     ejecutadoTexto,
     '',
-    '👥 FORMACIÓN',
+    '*👥 FORMACIÓN*',
     formacionTexto,
     '',
-    '🔎 HALLAZGOS',
+    '*🔎 HALLAZGOS*',
     hallazgosTexto,
     '',
-    '📌 PENDIENTES',
+    '*📌 PENDIENTES*',
     pendientesTexto,
     '',
-    '➡️ SIGUIENTE PASO',
+    '*➡️ SIGUIENTE PASO*',
     siguienteTexto,
   ]
 
@@ -76,6 +206,78 @@ export function generarReporteWhatsApp(visita: Visita, actividadesDia: Actividad
 export function generarAsuntoOutlook(visita: Visita, actividadesDia: Actividad[], dia: number): string {
   const avance = calcularAvance(actividadesDia)
   return `${visita.planta || 'Planta'} | Día ${dia}/${visita.duracionDias} | Avance ${avance.porcentaje}% | Informe visita técnica`
+}
+
+export function generarInformeDiarioOutlookHTML(visita: Visita, actividadesDia: Actividad[], todasPendientes: Pendiente[], dia: number): string {
+  const avance = calcularAvance(actividadesDia)
+  const abiertosVisita = abiertos(todasPendientes)
+  const hoy = new Date().toISOString().slice(0, 10)
+
+  const ejecutadas = actividadesDia.filter((a) => a.estado === 'COMPLETADA' || a.estado === 'PARCIAL')
+  const formacion = actividadesDia.filter((a) => a.tipo.toLowerCase().includes('formaci'))
+  const hallazgosHoy = todasPendientes.filter((p) => p.fecha === hoy)
+  const siguienteDia = actividadesDia.filter((a) => a.estado === 'PENDIENTE' || a.estado === 'EN_PROGRESO')
+
+  const secciones: SeccionInforme[] = [
+    { icono: '🎯', titulo: 'Objetivo', contenidoHtml: `<p style="margin:0;">${escaparHtml(visita.objetivo)}</p>` },
+    {
+      icono: '✅',
+      titulo: 'Actividades ejecutadas',
+      contenidoHtml: listaHtml(
+        ejecutadas.map((a) => `${a.actividad}${a.observacion ? ` — ${a.observacion}` : ''}`),
+        'Sin actividades cerradas en el día.',
+      ),
+    },
+    {
+      icono: '👥',
+      titulo: 'Formación',
+      contenidoHtml: listaHtml(
+        formacion.map((a) => `${a.actividad}${a.observacion ? ` — ${a.observacion}` : ''}`),
+        'Sin formación registrada en el día.',
+      ),
+    },
+    {
+      icono: '📊',
+      titulo: 'Resultados',
+      contenidoHtml: `<p style="margin:0;">Avance del día: <strong>${avance.porcentaje}%</strong> (${avance.completadas} completadas, ${avance.parciales} parciales, ${avance.bloqueadas} bloqueadas)</p>`,
+    },
+    {
+      icono: '🔎',
+      titulo: 'Hallazgos',
+      contenidoHtml: listaHtml(
+        hallazgosHoy.map((p) => `[${p.prioridad}] ${p.descripcion}`),
+        'Sin hallazgos nuevos en el día.',
+      ),
+    },
+    {
+      icono: '🛠️',
+      titulo: 'Acciones',
+      contenidoHtml: listaHtml(
+        hallazgosHoy.map((p) => p.accionPropuesta || 'Por definir'),
+        'N/A',
+      ),
+    },
+    {
+      icono: '➡️',
+      titulo: 'Plan siguiente día',
+      contenidoHtml: listaHtml(
+        siguienteDia.map((a) => a.actividad),
+        'Continuar según el plan aprobado.',
+      ),
+    },
+    {
+      icono: '📷',
+      titulo: 'Evidencias',
+      contenidoHtml: `<p style="margin:0;">Fotografías registradas en la aplicación (adjuntar o exportar según corresponda).</p>`,
+    },
+  ]
+
+  return construirEmailHTML({
+    planta: visita.planta || 'Planta',
+    subtitulo: `Día ${dia}/${visita.duracionDias} · Avance ${avance.porcentaje}%`,
+    secciones,
+    tablaPendientesHtml: tablaPendientesHtml(abiertosVisita),
+  })
 }
 
 export function generarReporteOutlook(visita: Visita, actividadesDia: Actividad[], todasPendientes: Pendiente[]): string {
@@ -203,6 +405,76 @@ export function generarInformeFinalOutlook(
   return lineas.join('\n')
 }
 
+export function generarInformeFinalOutlookHTML(
+  visita: Visita,
+  todasActividades: Actividad[],
+  todasPendientes: Pendiente[],
+  fotos: Foto[],
+): string {
+  const avance = calcularAvance(todasActividades)
+  const ejecutadas = todasActividades.filter((a) => a.estado === 'COMPLETADA' || a.estado === 'PARCIAL')
+  const noEjecutadas = todasActividades.filter((a) => a.estado === 'PENDIENTE' || a.estado === 'EN_PROGRESO' || a.estado === 'BLOQUEADA')
+  const formacion = todasActividades.filter((a) => a.tipo.toLowerCase().includes('formaci'))
+  const abiertosVisita = abiertos(todasPendientes)
+  const cerrados = todasPendientes.filter((p) => p.estado === 'CERRADO' || p.estado === 'CANCELADO')
+
+  const secciones: SeccionInforme[] = [
+    { icono: '🎯', titulo: 'Objetivo', contenidoHtml: `<p style="margin:0;">${escaparHtml(visita.objetivo)}</p>` },
+    {
+      icono: '📊',
+      titulo: 'Resultado general',
+      contenidoHtml: `<p style="margin:0;">Avance final: <strong>${avance.porcentaje}%</strong> (${avance.completadas} completadas, ${avance.parciales} parciales, ${avance.pendientes} pendientes, ${avance.bloqueadas} bloqueadas)</p>`,
+    },
+    {
+      icono: '✅',
+      titulo: 'Actividades ejecutadas',
+      contenidoHtml: listaHtml(
+        ejecutadas.map((a) => `Día ${a.dia}: ${a.actividad}${a.observacion ? ` — ${a.observacion}` : ''}`),
+        'Ninguna actividad quedó completada o parcial.',
+      ),
+    },
+  ]
+
+  if (noEjecutadas.length > 0) {
+    secciones.push({
+      icono: '⚠️',
+      titulo: 'No ejecutadas / bloqueadas',
+      contenidoHtml: listaHtml(
+        noEjecutadas.map((a) => `Día ${a.dia}: ${a.actividad} (${a.estado})`),
+        '',
+      ),
+    })
+  }
+
+  secciones.push(
+    {
+      icono: '👥',
+      titulo: 'Formación realizada',
+      contenidoHtml: listaHtml(
+        formacion.map((a) => `Día ${a.dia}: ${a.actividad}${a.observacion ? ` — ${a.observacion}` : ''}`),
+        'Sin actividades de formación registradas.',
+      ),
+    },
+    {
+      icono: '🔎',
+      titulo: 'Hallazgos y acciones',
+      contenidoHtml: `<p style="margin:0;">Cerrados/cancelados: <strong>${cerrados.length}</strong> · Abiertos (pasan a seguimiento post-visita): <strong>${abiertosVisita.length}</strong></p>`,
+    },
+    {
+      icono: '📷',
+      titulo: 'Evidencias',
+      contenidoHtml: `<p style="margin:0;">${fotos.length} fotografías registradas durante la visita.</p>`,
+    },
+  )
+
+  return construirEmailHTML({
+    planta: visita.planta || 'Planta',
+    subtitulo: `Informe final de visita · Avance ${avance.porcentaje}%`,
+    secciones,
+    tablaPendientesHtml: tablaPendientesHtml(abiertosVisita),
+  })
+}
+
 export function generarResumenFinalWhatsApp(visita: Visita, todasActividades: Actividad[], todasPendientes: Pendiente[]): string {
   const avance = calcularAvance(todasActividades)
   const abiertosVisita = abiertos(todasPendientes)
@@ -212,16 +484,16 @@ export function generarResumenFinalWhatsApp(visita: Visita, todasActividades: Ac
   const sinDueño = abiertosVisita.some((p) => p.responsable === RESPONSABLE_POR_DEFECTO || p.fechaCompromiso === FECHA_POR_DEFECTO)
 
   const lineas = [
-    `📍 ${visita.planta || 'Planta'} | Visita finalizada`,
-    `📊 Avance final: ${avance.porcentaje}%`,
+    `📍 *${visita.planta || 'Planta'}* | Visita finalizada`,
+    `📊 Avance final: *${avance.porcentaje}%*`,
     '',
-    '✅ EJECUTADO',
+    '*✅ EJECUTADO*',
     truncar(ejecutadas.length === 0 ? 'Sin actividades cerradas.' : ejecutadas.map((a) => a.actividad).join(', '), 220),
     '',
-    '👥 FORMACIÓN',
+    '*👥 FORMACIÓN*',
     truncar(formacion.length === 0 ? 'Sin formación completada.' : formacion.map((a) => a.actividad).join(', '), 160),
     '',
-    '📌 PENDIENTES EN SEGUIMIENTO',
+    '*📌 PENDIENTES EN SEGUIMIENTO*',
     abiertosVisita.length === 0 ? 'No quedan pendientes abiertos.' : `${abiertosVisita.length} pendientes pasan a seguimiento post-visita.`,
   ]
 
