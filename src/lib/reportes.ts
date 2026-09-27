@@ -104,19 +104,42 @@ interface SeccionInforme {
   contenidoHtml: string
 }
 
-function construirEmailHTML(opts: { planta: string; subtitulo: string; secciones: SeccionInforme[]; tablaPendientesHtml?: string }): string {
-  const filasSecciones = opts.secciones
+/** Cuadrícula de miniaturas de evidencia fotográfica, ya reducidas a base64 (ver lib/imagenes.ts). */
+function seccionEvidenciasHtml(fotosBase64: string[], totalReal: number): string {
+  if (fotosBase64.length === 0) {
+    return totalReal > 0
+      ? `<p style="margin:0;">${totalReal} fotografía(s) registradas (no se incluyeron en esta vista).</p>`
+      : `<p style="margin:0;color:#64748b;">Sin fotografías registradas.</p>`
+  }
+  const imgs = fotosBase64
     .map(
-      (s) => `
-      <tr>
-        <td style="padding:16px 20px 4px;">
-          <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#0284c7;text-transform:uppercase;letter-spacing:.04em;">${s.icono} ${escaparHtml(s.titulo)}</p>
-          <div style="font-size:14px;line-height:1.55;color:#1e293b;">${s.contenidoHtml}</div>
-        </td>
-      </tr>`,
+      (src) =>
+        `<img src="${src}" style="width:31%;margin:0 3% 8px 0;border-radius:8px;object-fit:cover;aspect-ratio:1/1;vertical-align:top;" />`,
     )
     .join('')
+  const nota =
+    totalReal > fotosBase64.length
+      ? `<p style="margin:6px 0 0;color:#64748b;font-size:12px;">Mostrando ${fotosBase64.length} de ${totalReal} fotografías registradas.</p>`
+      : ''
+  return `<div>${imgs}</div>${nota}`
+}
 
+/** Solo el contenido del informe (secciones + tabla), sin el marco de correo. Es lo que se muestra editable en pantalla. */
+function construirCuerpoHTML(secciones: SeccionInforme[], tablaPendientesHtml?: string): string {
+  const bloques = secciones
+    .map(
+      (s) => `
+      <div style="padding:12px 0;">
+        <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#0284c7;text-transform:uppercase;letter-spacing:.04em;">${s.icono} ${escaparHtml(s.titulo)}</p>
+        <div style="font-size:14px;line-height:1.55;color:#1e293b;">${s.contenidoHtml}</div>
+      </div>`,
+    )
+    .join('')
+  return `${bloques}${tablaPendientesHtml ? `<div style="padding:12px 0;">${tablaPendientesHtml}</div>` : ''}`
+}
+
+/** Envuelve un cuerpo (generado o ya editado por el usuario) con el encabezado y pie de un correo. */
+export function envolverInformeHTML(planta: string, subtitulo: string, cuerpoHtml: string): string {
   return `<!doctype html>
 <html>
   <body style="margin:0;background:#e2e8f0;padding:20px 0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;">
@@ -124,12 +147,13 @@ function construirEmailHTML(opts: { planta: string; subtitulo: string; secciones
       <tr>
         <td style="background:#0f172a;background:linear-gradient(135deg,#0f172a,#0369a1);padding:24px 20px;">
           <p style="margin:0;color:#7dd3fc;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Informe de visita técnica</p>
-          <p style="margin:6px 0 0;color:#ffffff;font-size:22px;font-weight:700;">${escaparHtml(opts.planta)}</p>
-          <p style="margin:4px 0 0;color:#bae6fd;font-size:13px;">${escaparHtml(opts.subtitulo)}</p>
+          <p style="margin:6px 0 0;color:#ffffff;font-size:22px;font-weight:700;">${escaparHtml(planta)}</p>
+          <p style="margin:4px 0 0;color:#bae6fd;font-size:13px;">${escaparHtml(subtitulo)}</p>
         </td>
       </tr>
-      ${filasSecciones}
-      ${opts.tablaPendientesHtml ? `<tr><td style="padding:16px 20px 4px;">${opts.tablaPendientesHtml}</td></tr>` : ''}
+      <tr>
+        <td style="padding:8px 20px;">${cuerpoHtml}</td>
+      </tr>
       <tr>
         <td style="padding:18px 20px;text-align:center;">
           <p style="margin:0;color:#94a3b8;font-size:11px;">Generado con la app de Visitas Técnicas</p>
@@ -208,7 +232,19 @@ export function generarAsuntoOutlook(visita: Visita, actividadesDia: Actividad[]
   return `${visita.planta || 'Planta'} | Día ${dia}/${visita.duracionDias} | Avance ${avance.porcentaje}% | Informe visita técnica`
 }
 
-export function generarInformeDiarioOutlookHTML(visita: Visita, actividadesDia: Actividad[], todasPendientes: Pendiente[], dia: number): string {
+export interface CuerpoInforme {
+  subtitulo: string
+  cuerpoHtml: string
+}
+
+export function generarInformeDiarioOutlookHTML(
+  visita: Visita,
+  actividadesDia: Actividad[],
+  todasPendientes: Pendiente[],
+  dia: number,
+  fotosBase64: string[] = [],
+  totalFotos = 0,
+): CuerpoInforme {
   const avance = calcularAvance(actividadesDia)
   const abiertosVisita = abiertos(todasPendientes)
   const hoy = new Date().toISOString().slice(0, 10)
@@ -268,16 +304,14 @@ export function generarInformeDiarioOutlookHTML(visita: Visita, actividadesDia: 
     {
       icono: '📷',
       titulo: 'Evidencias',
-      contenidoHtml: `<p style="margin:0;">Fotografías registradas en la aplicación (adjuntar o exportar según corresponda).</p>`,
+      contenidoHtml: seccionEvidenciasHtml(fotosBase64, totalFotos),
     },
   ]
 
-  return construirEmailHTML({
-    planta: visita.planta || 'Planta',
+  return {
     subtitulo: `Día ${dia}/${visita.duracionDias} · Avance ${avance.porcentaje}%`,
-    secciones,
-    tablaPendientesHtml: tablaPendientesHtml(abiertosVisita),
-  })
+    cuerpoHtml: construirCuerpoHTML(secciones, tablaPendientesHtml(abiertosVisita)),
+  }
 }
 
 export function generarReporteOutlook(visita: Visita, actividadesDia: Actividad[], todasPendientes: Pendiente[]): string {
@@ -409,8 +443,9 @@ export function generarInformeFinalOutlookHTML(
   visita: Visita,
   todasActividades: Actividad[],
   todasPendientes: Pendiente[],
-  fotos: Foto[],
-): string {
+  fotosBase64: string[] = [],
+  totalFotos = 0,
+): CuerpoInforme {
   const avance = calcularAvance(todasActividades)
   const ejecutadas = todasActividades.filter((a) => a.estado === 'COMPLETADA' || a.estado === 'PARCIAL')
   const noEjecutadas = todasActividades.filter((a) => a.estado === 'PENDIENTE' || a.estado === 'EN_PROGRESO' || a.estado === 'BLOQUEADA')
@@ -463,16 +498,14 @@ export function generarInformeFinalOutlookHTML(
     {
       icono: '📷',
       titulo: 'Evidencias',
-      contenidoHtml: `<p style="margin:0;">${fotos.length} fotografías registradas durante la visita.</p>`,
+      contenidoHtml: seccionEvidenciasHtml(fotosBase64, totalFotos),
     },
   )
 
-  return construirEmailHTML({
-    planta: visita.planta || 'Planta',
+  return {
     subtitulo: `Informe final de visita · Avance ${avance.porcentaje}%`,
-    secciones,
-    tablaPendientesHtml: tablaPendientesHtml(abiertosVisita),
-  })
+    cuerpoHtml: construirCuerpoHTML(secciones, tablaPendientesHtml(abiertosVisita)),
+  }
 }
 
 export function generarResumenFinalWhatsApp(visita: Visita, todasActividades: Actividad[], todasPendientes: Pendiente[]): string {

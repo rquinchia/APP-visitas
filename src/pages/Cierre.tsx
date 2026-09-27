@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { listarActividadesPorVisita, listarFotosPorVisita, listarHistorialPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import {
   copiarHtmlYTexto,
+  envolverInformeHTML,
   generarAsuntoInformeFinal,
   generarInformeFinalOutlook,
   generarInformeFinalOutlookHTML,
   generarResumenFinalWhatsApp,
 } from '../lib/reportes'
+import { blobAThumbnailDataUrl } from '../lib/imagenes'
 import { calcularAvance } from '../lib/progreso'
 import { aplicarTransicionEstado, buscarTransicion } from '../lib/transiciones'
 import type { Actividad, CambioHistorial, Foto, Pendiente, Visita } from '../types'
+
+const MAX_FOTOS_INFORME_FINAL = 18
 
 async function copiar(texto: string) {
   try {
@@ -31,6 +35,10 @@ export default function Cierre() {
   const [fotos, setFotos] = useState<Foto[]>([])
   const [historial, setHistorial] = useState<CambioHistorial[]>([])
   const [confirmando, setConfirmando] = useState(false)
+  const [subtituloOutlook, setSubtituloOutlook] = useState('')
+  const [cargandoFotos, setCargandoFotos] = useState(true)
+
+  const cuerpoRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!id) return
@@ -40,6 +48,23 @@ export default function Cierre() {
     listarFotosPorVisita(id).then(setFotos)
     listarHistorialPorVisita(id).then(setHistorial)
   }, [id])
+
+  async function generarInformeConFotos(v: Visita, acts: Actividad[], pends: Pendiente[], fts: Foto[]) {
+    setCargandoFotos(true)
+    const capadas = fts.slice(0, MAX_FOTOS_INFORME_FINAL)
+    const dataUrls = (await Promise.all(capadas.map((f) => blobAThumbnailDataUrl(f.blob).catch(() => null)))).filter(
+      (u): u is string => !!u,
+    )
+    setCargandoFotos(false)
+    const { subtitulo, cuerpoHtml } = generarInformeFinalOutlookHTML(v, acts, pends, dataUrls, fts.length)
+    setSubtituloOutlook(subtitulo)
+    if (cuerpoRef.current) cuerpoRef.current.innerHTML = cuerpoHtml
+  }
+
+  useEffect(() => {
+    if (visita && fotos) generarInformeConFotos(visita, actividades, pendientes, fotos)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visita, actividades, pendientes, fotos])
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visita === null) return <p className="text-sm text-rose-600">Visita no encontrada.</p>
@@ -52,11 +77,19 @@ export default function Cierre() {
 
   const asunto = generarAsuntoInformeFinal(visita, actividades)
   const informeOutlook = generarInformeFinalOutlook(visita, actividades, pendientes, fotos)
-  const informeOutlookHtml = generarInformeFinalOutlookHTML(visita, actividades, pendientes, fotos)
   const resumenWhatsApp = generarResumenFinalWhatsApp(visita, actividades, pendientes)
 
+  function regenerarInforme() {
+    if (!visita) return
+    if (!window.confirm('Esto reemplaza el informe con la versión generada automáticamente y pierdes tus ediciones. ¿Continuar?')) return
+    generarInformeConFotos(visita, actividades, pendientes, fotos)
+  }
+
   async function copiarInformeFinalConFormato() {
-    const ok = await copiarHtmlYTexto(informeOutlookHtml, `${asunto}\n\n${informeOutlook}`)
+    if (!cuerpoRef.current || !visita) return
+    const html = envolverInformeHTML(visita.planta || 'Planta', subtituloOutlook, cuerpoRef.current.innerHTML)
+    const texto = `${asunto}\n\n${cuerpoRef.current.innerText}`
+    const ok = await copiarHtmlYTexto(html, texto)
     alert(ok ? 'Informe copiado. Pégalo en Outlook con Ctrl+V (mantiene el formato).' : 'No se pudo copiar automáticamente.')
   }
 
@@ -141,14 +174,28 @@ export default function Cierre() {
       </section>
 
       <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <h3 className="mb-2 text-sm font-semibold text-slate-800">Informe final — Outlook</h3>
-        <p className="mb-2 text-xs text-slate-500">Asunto: {asunto}</p>
-        <div className="overflow-hidden rounded-lg border border-slate-200">
-          <iframe title="Vista previa del informe final" srcDoc={informeOutlookHtml} className="h-[420px] w-full bg-slate-100" sandbox="" />
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-800">Informe final — Outlook (editable)</h3>
+          <button onClick={regenerarInforme} className="text-xs font-medium text-slate-500">
+            Regenerar
+          </button>
         </div>
+        <p className="mb-2 text-xs text-slate-500">
+          Asunto: {asunto}. Toca el informe para editar, agregar o quitar contenido.
+          {cargandoFotos && ' Cargando fotos…'}
+        </p>
+
+        <div
+          ref={cuerpoRef}
+          contentEditable
+          suppressContentEditableWarning
+          className="max-h-[480px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 outline-none focus:ring-2 focus:ring-accent/30"
+        />
+
         <button onClick={copiarInformeFinalConFormato} className="mt-2 w-full rounded-lg bg-accent py-2.5 text-sm font-semibold text-white">
           Copiar informe con formato
         </button>
+
         <details className="mt-3">
           <summary className="cursor-pointer text-xs font-medium text-slate-500">Copiar como texto simple</summary>
           <pre className="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700">{informeOutlook}</pre>

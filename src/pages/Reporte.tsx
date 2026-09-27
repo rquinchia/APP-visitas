@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
+import { listarActividadesPorVisita, listarFotosPorEntidad, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { diaActual } from '../lib/progreso'
+import { blobAThumbnailDataUrl } from '../lib/imagenes'
 import {
   copiarHtmlYTexto,
+  envolverInformeHTML,
   generarAsuntoOutlook,
   generarInformeDiarioOutlookHTML,
   generarReporteOutlook,
   generarReporteWhatsApp,
 } from '../lib/reportes'
 import type { Actividad, Pendiente, Visita } from '../types'
+
+const MAX_FOTOS_INFORME = 12
 
 async function copiar(texto: string) {
   try {
@@ -18,6 +22,14 @@ async function copiar(texto: string) {
   } catch {
     alert('No se pudo copiar automáticamente. Selecciona el texto y cópialo manualmente.')
   }
+}
+
+async function cargarMiniaturas(actividades: Actividad[]): Promise<{ dataUrls: string[]; total: number }> {
+  const listas = await Promise.all(actividades.map((a) => listarFotosPorEntidad(a.id)))
+  const todas = listas.flat()
+  const capadas = todas.slice(0, MAX_FOTOS_INFORME)
+  const dataUrls = await Promise.all(capadas.map((f) => blobAThumbnailDataUrl(f.blob).catch(() => null)))
+  return { dataUrls: dataUrls.filter((u): u is string => !!u), total: todas.length }
 }
 
 export default function Reporte() {
@@ -32,7 +44,24 @@ export default function Reporte() {
   const [textoWhatsApp, setTextoWhatsApp] = useState('')
   const [asuntoOutlook, setAsuntoOutlook] = useState('')
   const [textoOutlook, setTextoOutlook] = useState('')
-  const [htmlOutlook, setHtmlOutlook] = useState('')
+  const [subtituloOutlook, setSubtituloOutlook] = useState('')
+  const [cargandoFotos, setCargandoFotos] = useState(false)
+
+  const cuerpoRef = useRef<HTMLDivElement>(null)
+
+  async function generar(v: Visita, todasActs: Actividad[], todasPends: Pendiente[], d: number) {
+    const actsDia = todasActs.filter((a) => a.dia === d)
+    setTextoWhatsApp(generarReporteWhatsApp(v, actsDia, todasPends, d))
+    setAsuntoOutlook(generarAsuntoOutlook(v, actsDia, d))
+    setTextoOutlook(generarReporteOutlook(v, actsDia, todasPends))
+
+    setCargandoFotos(true)
+    const { dataUrls, total } = await cargarMiniaturas(actsDia)
+    setCargandoFotos(false)
+    const { subtitulo, cuerpoHtml } = generarInformeDiarioOutlookHTML(v, actsDia, todasPends, d, dataUrls, total)
+    setSubtituloOutlook(subtitulo)
+    if (cuerpoRef.current) cuerpoRef.current.innerHTML = cuerpoHtml
+  }
 
   useEffect(() => {
     if (!id) return
@@ -50,14 +79,11 @@ export default function Reporte() {
             return c && c > 0 ? c : 1
           })()
         setDia(d)
-        const actsDia = acts.filter((a) => a.dia === d)
-        setTextoWhatsApp(generarReporteWhatsApp(v, actsDia, pends, d))
-        setAsuntoOutlook(generarAsuntoOutlook(v, actsDia, d))
-        setTextoOutlook(generarReporteOutlook(v, actsDia, pends))
-        setHtmlOutlook(generarInformeDiarioOutlookHTML(v, actsDia, pends, d))
+        await generar(v, acts, pends, d)
       }
     }
     cargar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
@@ -65,11 +91,8 @@ export default function Reporte() {
 
   function regenerar() {
     if (!visita) return
-    const actsDia = actividades.filter((a) => a.dia === dia)
-    setTextoWhatsApp(generarReporteWhatsApp(visita, actsDia, pendientes, dia))
-    setAsuntoOutlook(generarAsuntoOutlook(visita, actsDia, dia))
-    setTextoOutlook(generarReporteOutlook(visita, actsDia, pendientes))
-    setHtmlOutlook(generarInformeDiarioOutlookHTML(visita, actsDia, pendientes, dia))
+    if (cuerpoRef.current && !window.confirm('Esto reemplaza el informe con la versión generada automáticamente y pierdes tus ediciones. ¿Continuar?')) return
+    generar(visita, actividades, pendientes, dia)
   }
 
   async function compartirWhatsApp() {
@@ -85,7 +108,10 @@ export default function Reporte() {
   }
 
   async function copiarInformeConFormato() {
-    const ok = await copiarHtmlYTexto(htmlOutlook, `${asuntoOutlook}\n\n${textoOutlook}`)
+    if (!cuerpoRef.current || !visita) return
+    const html = envolverInformeHTML(visita.planta || 'Planta', subtituloOutlook, cuerpoRef.current.innerHTML)
+    const texto = `${asuntoOutlook}\n\n${cuerpoRef.current.innerText}`
+    const ok = await copiarHtmlYTexto(html, texto)
     alert(ok ? 'Informe copiado. Pégalo en Outlook con Ctrl+V (mantiene el formato).' : 'No se pudo copiar automáticamente.')
   }
 
@@ -109,7 +135,11 @@ export default function Reporte() {
         <div className="flex items-center gap-2">
           <select
             value={dia}
-            onChange={(e) => setDia(Number(e.target.value))}
+            onChange={(e) => {
+              const d = Number(e.target.value)
+              setDia(d)
+              generar(visita, actividades, pendientes, d)
+            }}
             className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
           >
             {Array.from({ length: visita.duracionDias }, (_, i) => i + 1).map((d) => (
@@ -144,12 +174,19 @@ export default function Reporte() {
       </section>
 
       <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <h3 className="mb-1 text-sm font-semibold text-slate-800">Outlook — vista previa con formato</h3>
-        <p className="mb-2 text-xs text-slate-500">Así se verá el informe. Cópialo con formato y pégalo en un correo nuevo (Ctrl+V).</p>
+        <h3 className="mb-1 text-sm font-semibold text-slate-800">Outlook — informe editable</h3>
+        <p className="mb-2 text-xs text-slate-500">
+          Toca directamente el informe para editarlo (agregar, quitar o corregir texto). Luego cópialo con formato y pégalo
+          en un correo nuevo (Ctrl+V).
+          {cargandoFotos && ' Cargando fotos…'}
+        </p>
 
-        <div className="overflow-hidden rounded-lg border border-slate-200">
-          <iframe title="Vista previa del informe" srcDoc={htmlOutlook} className="h-[420px] w-full bg-slate-100" sandbox="" />
-        </div>
+        <div
+          ref={cuerpoRef}
+          contentEditable
+          suppressContentEditableWarning
+          className="max-h-[480px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 outline-none focus:ring-2 focus:ring-accent/30"
+        />
 
         <button onClick={copiarInformeConFormato} className="mt-2 w-full rounded-lg bg-accent py-2.5 text-sm font-semibold text-white">
           Copiar informe con formato
@@ -181,9 +218,6 @@ export default function Reporte() {
                 Abrir correo
               </button>
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">
-              El texto editado aquí no cambia la vista previa con formato de arriba — úsalo si prefieres pegar texto simple.
-            </p>
           </div>
         </details>
       </section>

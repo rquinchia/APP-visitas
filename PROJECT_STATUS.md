@@ -15,6 +15,28 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Fotos reales y edición del informe (2026-09-26, feedback del usuario)
+
+El usuario probó el informe de Outlook en un correo real (con éxito — el copiado con formato
+funcionó y se pegó correctamente en Outlook) y señaló dos vacíos importantes:
+1. Las fotos no aparecían en el informe (solo un texto genérico "fotografías registradas...").
+2. No había forma de editar el informe antes de copiarlo (agregar/quitar contenido).
+
+**Se corrigió ambos**:
+- `src/lib/imagenes.ts`: reduce cada foto a una miniatura en base64 (máx. 480px, JPEG) usando
+  `createImageBitmap` + `canvas`, para poder incrustarlas en el HTML sin que el correo pese
+  demasiado. El informe diario incluye hasta 12 fotos de las actividades del día; el informe
+  final de cierre hasta 18 fotos de toda la visita (si hay más, el informe lo indica: "Mostrando
+  X de Y fotografías").
+- `src/lib/reportes.ts` se reestructuró: `construirCuerpoHTML` genera solo el contenido (sin el
+  marco de correo) y `envolverInformeHTML` lo empaqueta con encabezado/pie al copiar — esto
+  permite mostrar el cuerpo directamente editable en pantalla y envolver la versión ya editada
+  por el usuario al momento de copiar, en vez de solo la generada automáticamente.
+- `Reporte.tsx` y `Cierre.tsx`: el informe de Outlook ahora se muestra en un `<div
+  contentEditable>` en vez de una vista previa de solo lectura — el usuario puede tocar y editar
+  libremente (agregar, borrar, corregir) antes de copiar. Botón "Regenerar" para volver a la
+  versión automática si lo desea (con confirmación, ya que descarta ediciones).
+
 ## Decisión: asistente de redacción con IA (2026-09-26)
 
 El usuario pidió un asistente tipo "chat" por campo para ayudar a redactar/mejorar textos
