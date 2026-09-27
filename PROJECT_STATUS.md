@@ -40,10 +40,13 @@ navegador, sin backend propio):
   ajustar/usar/cancelar), integrado en los campos "Descripción" y "Acción propuesta" de
   Pendientes, y "Objetivo"/"Observación" de Actividades.
 
-**Pendiente de confirmar con el usuario**: probar "Probar conexión" en Ajustes con una clave real
-de Gemini para validar que funciona de punta a punta. Si `gemini-2.0-flash` ya no fuera un nombre
-de modelo válido para su cuenta, el error de la API lo diría explícitamente (visible en el mensaje
-de "Probar conexión") y es un cambio de una sola línea en `src/lib/ia.ts` corregirlo.
+**Validado con el usuario (2026-09-26)**: probó "Probar conexión" con su clave real de Gemini
+(nivel gratuito, proyecto "Default Gemini Project" en aistudio.google.com). Confirmó lo esperado:
+**no hubo bloqueo CORS** — la API de Gemini sí acepta llamadas directas desde el navegador. Solo
+falló el nombre del modelo (`gemini-2.0-flash` ya no existe); el error de la API lo indicó
+explícitamente ("use models/gemini-3.8-flash"), así que se corrigió `MODELO` en `src/lib/ia.ts`
+a `gemini-3.8-flash`. Pendiente que el usuario confirme "Probar conexión" otra vez tras subir
+este ajuste.
 
 ## Decisión: paso de datos entre dispositivos vía OneDrive (2026-09-26)
 

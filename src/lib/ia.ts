@@ -1,6 +1,6 @@
 import { obtenerClaveIA } from './iaConfig'
 
-const MODELO = 'gemini-2.0-flash'
+const MODELO = 'gemini-3.8-flash'
 const URL_API = `https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent`
 
 const PROMPT_SISTEMA =
