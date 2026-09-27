@@ -5,6 +5,7 @@ import { generarId, ahoraISO } from '../lib/id'
 import { registrarCambioPlan } from '../lib/historial'
 import type { Actividad, EstadoActividad, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD, TIPOS_ACTIVIDAD_SUGERIDOS } from '../types'
+import AsistenteIA from '../components/AsistenteIA'
 
 const VACIA: Omit<Actividad, 'id' | 'visitaId' | 'creadoEn' | 'actualizadoEn'> = {
   dia: 1,
@@ -138,7 +139,14 @@ export default function ActividadForm() {
       </div>
 
       <Campo etiqueta="Actividad" requerido valor={campos.actividad} onChange={(v) => setCampos({ ...campos, actividad: v })} placeholder="Ej. Repaso de ajuste de rodillos" />
-      <Campo etiqueta="Objetivo" valor={campos.objetivo} onChange={(v) => setCampos({ ...campos, objetivo: v })} />
+      <div>
+        <Campo etiqueta="Objetivo" valor={campos.objetivo} onChange={(v) => setCampos({ ...campos, objetivo: v })} />
+        <AsistenteIA
+          contexto="Objetivo de una actividad dentro del plan de una visita técnica industrial"
+          valorActual={campos.objetivo}
+          onInsertar={(texto) => setCampos({ ...campos, objetivo: texto })}
+        />
+      </div>
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">Tipo</label>
@@ -167,6 +175,11 @@ export default function ActividadForm() {
           onChange={(e) => setCampos({ ...campos, observacion: e.target.value })}
           rows={3}
           className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+        />
+        <AsistenteIA
+          contexto="Observación de cómo quedó una actividad ejecutada en una visita técnica industrial"
+          valorActual={campos.observacion}
+          onInsertar={(texto) => setCampos({ ...campos, observacion: texto })}
         />
       </div>
 

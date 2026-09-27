@@ -14,6 +14,7 @@ import {
   TIPOS_VISITA,
 } from '../types'
 import FotosPicker from '../components/FotosPicker'
+import AsistenteIA from '../components/AsistenteIA'
 
 const VACIO = {
   visitaId: '',
@@ -156,6 +157,11 @@ export default function PendienteForm() {
           className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
           required
         />
+        <AsistenteIA
+          contexto="Descripción de un hallazgo/pendiente detectado en una visita técnica industrial"
+          valorActual={campos.descripcion}
+          onInsertar={(texto) => setCampos({ ...campos, descripcion: texto })}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -198,6 +204,11 @@ export default function PendienteForm() {
           onChange={(e) => setCampos({ ...campos, accionPropuesta: e.target.value })}
           rows={2}
           className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+        />
+        <AsistenteIA
+          contexto="Acción propuesta para resolver un hallazgo/pendiente de una visita técnica industrial"
+          valorActual={campos.accionPropuesta}
+          onInsertar={(texto) => setCampos({ ...campos, accionPropuesta: texto })}
         />
       </div>
 

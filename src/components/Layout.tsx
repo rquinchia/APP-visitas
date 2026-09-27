@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, Link } from 'react-router-dom'
 import EstadoApp from './EstadoApp'
 
 const NAV_ITEMS = [
@@ -16,8 +16,13 @@ export default function Layout() {
           className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/80 px-4 pb-3 backdrop-blur-xl backdrop-saturate-150"
           style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.875rem)' }}
         >
-          <h1 className="text-[22px] font-bold tracking-tight text-slate-900">Visitas Técnicas</h1>
-          <div className="mt-1.5">
+          <div className="flex items-center justify-between">
+            <h1 className="text-[22px] font-bold tracking-tight text-slate-900">Visitas Técnicas</h1>
+            <Link to="/ajustes" aria-label="Ajustes" className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-slate-400">
+              ⚙️
+            </Link>
+          </div>
+          <div className="mt-1">
             <EstadoApp />
           </div>
         </header>

@@ -15,6 +15,36 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Decisión: asistente de redacción con IA (2026-09-26)
+
+El usuario pidió un asistente tipo "chat" por campo para ayudar a redactar/mejorar textos
+(descripción de pendientes, objetivos de actividades, etc.), mencionando ChatGPT como ejemplo.
+Se le preguntó explícitamente antes de construir, porque implica enviar texto a un proveedor de
+IA externo (dato potencialmente corporativo) y tiene costo de uso.
+
+**Decisión del usuario**: sí, usando **OpenAI (ChatGPT)** con su propia cuenta/clave de API.
+
+**Cómo se implementó** (respetando "sin servidor obligatorio" — llamada directa desde el
+navegador, sin backend propio):
+- `src/pages/Ajustes.tsx`: el usuario pega su propia clave de OpenAI (`sk-...`), guardada
+  únicamente en `localStorage` de ese dispositivo (nunca en el código ni en el repositorio —
+  clave distinta por dispositivo). Incluye un botón "Probar conexión".
+- `src/lib/ia.ts`: llama a `https://api.openai.com/v1/chat/completions` (modelo `gpt-4o-mini`)
+  directamente desde el navegador con la clave guardada.
+- `src/components/AsistenteIA.tsx`: componente reutilizable tipo mini-chat (pedir → sugerencia →
+  ajustar/usar/cancelar), integrado en los campos "Descripción" y "Acción propuesta" de
+  Pendientes, y "Objetivo"/"Observación" de Actividades.
+
+**⚠️ Riesgo técnico pendiente de validar con el usuario**: las APIs de OpenAI históricamente no
+siempre permiten llamadas directas desde el navegador (CORS), ya que se diseñaron asumiendo un
+backend intermediario (por eso ellos mismos recomiendan no exponer la clave en el cliente). Esta
+sesión no pudo probar una llamada real desde un navegador. **Si al usar "Probar conexión" el
+usuario ve un error de red/CORS**, la clave y la cuenta están bien — lo que fallaría es esta
+arquitectura sin servidor. En ese caso, el plan B (ya conversado como posibilidad, no
+implementado) sería un pequeño proxy serverless gratuito (ej. Cloudflare Workers) que reenvíe la
+solicitud — agregaría un componente de infraestructura mínimo, a decidir con el usuario si se
+llega a ese punto.
+
 ## Decisión: paso de datos entre dispositivos vía OneDrive (2026-09-26)
 
 El usuario notó (correctamente) que lo registrado en el iPhone no aparece solo en la PC —
