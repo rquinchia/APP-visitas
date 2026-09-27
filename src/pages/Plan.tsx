@@ -6,6 +6,7 @@ import { registrarCambioPlan } from '../lib/historial'
 import { diaActual } from '../lib/progreso'
 import type { Actividad, EstadoActividad, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD } from '../types'
+import FotosPicker from '../components/FotosPicker'
 
 export default function Plan() {
   const { id } = useParams<{ id: string }>()
@@ -202,6 +203,10 @@ export default function Plan() {
                       </option>
                     ))}
                   </select>
+
+                  <div className="mt-2">
+                    <FotosPicker visitaId={visita.id} entidadTipo="ACTIVIDAD" entidadId={a.id} titulo="Fotos" />
+                  </div>
 
                   <div className="mt-2 flex gap-3 text-xs">
                     <Link to={`/visitas/${visita.id}/plan/${a.id}/editar`} className="font-medium text-accent">

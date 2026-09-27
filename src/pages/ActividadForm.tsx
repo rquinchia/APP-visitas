@@ -6,6 +6,7 @@ import { registrarCambioPlan } from '../lib/historial'
 import type { Actividad, EstadoActividad, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD, TIPOS_ACTIVIDAD_SUGERIDOS } from '../types'
 import AsistenteIA from '../components/AsistenteIA'
+import FotosPicker from '../components/FotosPicker'
 
 const VACIA: Omit<Actividad, 'id' | 'visitaId' | 'creadoEn' | 'actualizadoEn'> = {
   dia: 1,
@@ -182,6 +183,10 @@ export default function ActividadForm() {
           onInsertar={(texto) => setCampos({ ...campos, observacion: texto })}
         />
       </div>
+
+      {actividadOriginal && (
+        <FotosPicker visitaId={visita.id} entidadTipo="ACTIVIDAD" entidadId={actividadOriginal.id} titulo="Fotos / evidencia" />
+      )}
 
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input
