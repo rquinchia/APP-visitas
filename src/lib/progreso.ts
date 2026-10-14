@@ -1,4 +1,5 @@
 import type { Actividad, Visita } from '../types'
+import { fechaLocal, parsearFecha } from './id'
 
 export interface ResumenAvance {
   completadas: number
@@ -21,9 +22,17 @@ export function calcularAvance(actividades: Actividad[]): ResumenAvance {
   return { completadas, parciales, pendientes, bloqueadas, total, porcentaje }
 }
 
+/** Fecha calendario (YYYY-MM-DD) del día N de la visita, o null si no tiene fecha de inicio. */
+export function fechaDelDia(visita: Visita, dia: number): string | null {
+  if (!visita.fechaInicio) return null
+  const d = parsearFecha(visita.fechaInicio)
+  d.setDate(d.getDate() + dia - 1)
+  return fechaLocal(d)
+}
+
 export function diaActual(visita: Visita): number | null {
   if (!visita.fechaInicio) return null
-  const inicio = new Date(visita.fechaInicio)
+  const inicio = parsearFecha(visita.fechaInicio)
   const hoy = new Date()
   const inicioUTC = Date.UTC(inicio.getFullYear(), inicio.getMonth(), inicio.getDate())
   const hoyUTC = Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())

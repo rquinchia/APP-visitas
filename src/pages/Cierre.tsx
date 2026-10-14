@@ -3,14 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, Camera, CheckCircle2, Copy, GraduationCap, Mail, RotateCcw, Share2, XCircle } from 'lucide-react'
 import { listarActividadesPorVisita, listarFotosPorVisita, listarHistorialPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import {
+  contextoFinal,
   copiarHtmlYTexto,
   envolverInformeHTML,
   generarAsuntoInformeFinal,
-  generarInformeFinalOutlookHTML,
+  generarInformeFinalHTML,
   generarResumenFinalWhatsApp,
+  type EncabezadoInforme,
 } from '../lib/reportes'
-import { blobAThumbnailDataUrl } from '../lib/imagenes'
+import { prepararGaleria, prepararHallazgos } from '../lib/datosInforme'
 import { descargarBorradorOutlook } from '../lib/outlook'
+import EncabezadoInformeVista from '../components/EncabezadoInformeVista'
 import { calcularAvance } from '../lib/progreso'
 import { aplicarTransicionEstado, buscarTransicion } from '../lib/transiciones'
 import type { Actividad, CambioHistorial, Foto, Pendiente, Visita } from '../types'
@@ -20,7 +23,7 @@ import BarraProgreso from '../components/BarraProgreso'
 import Segmentado from '../components/Segmentado'
 import type { LucideIcon } from 'lucide-react'
 
-const MAX_FOTOS_INFORME_FINAL = 18
+const MAX_FOTOS_ACTIVIDADES = 9
 
 async function copiar(texto: string) {
   try {
@@ -42,7 +45,7 @@ export default function Cierre() {
   const [historial, setHistorial] = useState<CambioHistorial[]>([])
   const [pestana, setPestana] = useState<'informe' | 'whatsapp' | 'historial'>('informe')
   const [confirmando, setConfirmando] = useState(false)
-  const [subtituloOutlook, setSubtituloOutlook] = useState('')
+  const [encabezado, setEncabezado] = useState<EncabezadoInforme | null>(null)
   const [semillaHtml, setSemillaHtml] = useState('')
   const [versionSemilla, setVersionSemilla] = useState(0)
   const [generando, setGenerando] = useState(true)
@@ -54,17 +57,18 @@ export default function Cierre() {
     if (cuerpoRef.current) cuerpoRef.current.innerHTML = semillaHtml
   }, [semillaHtml, versionSemilla, visita])
 
-  async function generarInforme(v: Visita, acts: Actividad[], pends: Pendiente[], fts: Foto[]) {
+  async function generarInforme(v: Visita, acts: Actividad[], pends: Pendiente[]) {
     setGenerando(true)
-    const capadas = fts.slice(0, MAX_FOTOS_INFORME_FINAL)
-    const dataUrls = (await Promise.all(capadas.map((f) => blobAThumbnailDataUrl(f.blob).catch(() => null)))).filter(
-      (u): u is string => !!u,
-    )
-    const { subtitulo, cuerpoHtml } = generarInformeFinalOutlookHTML(v, acts, pends, dataUrls, fts.length)
-    setSubtituloOutlook(subtitulo)
-    setSemillaHtml(cuerpoHtml)
+    const ctx = contextoFinal(v, acts, pends)
+    const [hallazgos, galeria] = await Promise.all([
+      prepararHallazgos(ctx.hallazgos, ctx.codigos, acts),
+      prepararGaleria(ctx.actividades, MAX_FOTOS_ACTIVIDADES),
+    ])
+    const informe = generarInformeFinalHTML(ctx, hallazgos, galeria)
+    setEncabezado(informe.encabezado)
+    setSemillaHtml(informe.cuerpoHtml)
     setVersionSemilla((n) => n + 1)
-    setTextoWhatsApp(generarResumenFinalWhatsApp(v, acts, pends))
+    setTextoWhatsApp(generarResumenFinalWhatsApp(ctx))
     setGenerando(false)
   }
 
@@ -83,7 +87,7 @@ export default function Cierre() {
       setPendientes(pends)
       setFotos(fts)
       setHistorial(hist)
-      if (v) await generarInforme(v, acts, pends, fts)
+      if (v) await generarInforme(v, acts, pends)
     }
     cargar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,20 +99,19 @@ export default function Cierre() {
   const avance = calcularAvance(actividades)
   const noEjecutadas = actividades.filter((a) => a.estado === 'PENDIENTE' || a.estado === 'EN_PROGRESO' || a.estado === 'BLOQUEADA')
   const abiertosVisita = pendientes.filter((p) => p.estado !== 'CERRADO' && p.estado !== 'CANCELADO')
-  const cerradosVisita = pendientes.filter((p) => p.estado === 'CERRADO' || p.estado === 'CANCELADO')
   const formacion = actividades.filter((a) => a.tipo.toLowerCase().includes('formaci'))
-  const asunto = generarAsuntoInformeFinal(visita, actividades)
+  const asunto = generarAsuntoInformeFinal(contextoFinal(visita, actividades, pendientes))
   const transicionTerminar = buscarTransicion(visita.estado, 'VISITA_TERMINADA')
 
   function htmlFinal(): string | null {
-    if (!cuerpoRef.current || !visita) return null
-    return envolverInformeHTML(visita.planta || 'Planta', subtituloOutlook, cuerpoRef.current.innerHTML)
+    if (!cuerpoRef.current || !encabezado) return null
+    return envolverInformeHTML(encabezado, cuerpoRef.current.innerHTML)
   }
 
   function regenerar() {
     if (!visita) return
     if (!window.confirm('Esto vuelve a generar el informe automáticamente y descarta tus ediciones. ¿Continuar?')) return
-    generarInforme(visita, actividades, pendientes, fotos)
+    generarInforme(visita, actividades, pendientes)
   }
 
   function abrirEnOutlook() {
@@ -168,7 +171,7 @@ export default function Cierre() {
       <div className="grid grid-cols-2 gap-2">
         <Metrica icono={GraduationCap} color="morado" etiqueta="Formación" valor={formacion.length} />
         <Metrica icono={Camera} color="azul" etiqueta="Fotografías" valor={fotos.length} />
-        <Metrica icono={CheckCircle2} color="verde" etiqueta="Acciones cerradas" valor={cerradosVisita.length} />
+        <Metrica icono={CheckCircle2} color="verde" etiqueta="Hallazgos resueltos" valor={pendientes.filter((p) => p.estado === 'CERRADO').length} />
         <Metrica icono={XCircle} color="rojo" etiqueta="Pendientes abiertos" valor={abiertosVisita.length} />
       </div>
 
@@ -210,17 +213,13 @@ export default function Cierre() {
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Asunto</p>
             <p className="text-sm font-medium text-slate-800">{asunto}</p>
           </div>
-          <div className="bg-gradient-to-br from-slate-900 to-sky-800 px-4 py-4 text-white">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-sky-300">Informe de visita técnica</p>
-            <p className="mt-1 text-lg font-bold">{visita.planta || 'Planta'}</p>
-            <p className="text-xs text-sky-100">{subtituloOutlook}</p>
-          </div>
+          <EncabezadoInformeVista encabezado={encabezado} />
           {generando && <p className="px-4 pt-3 text-xs text-slate-400">Consolidando todos los días y fotos…</p>}
           <div
             ref={cuerpoRef}
             contentEditable
             suppressContentEditableWarning
-            className="max-h-[560px] min-h-[160px] overflow-y-auto px-4 py-2 outline-none"
+            className="informe-cuerpo max-h-[620px] min-h-[160px] overflow-y-auto px-3 py-2 outline-none"
           />
           <p className="border-t border-slate-100 px-4 py-2 text-[11px] text-slate-400">
             ✏️ Toca el texto para editarlo: agrega, quita o corrige lo que necesites.

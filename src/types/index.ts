@@ -195,8 +195,25 @@ export interface Pendiente {
   fechaCompromiso: string // FECHA_POR_DEFECTO si falta
   estado: EstadoPendiente
   comentarios: string
+  /** Actividad del plan donde se identificó (p.ej. "Diagnóstico general"). Opcional: puede ser un hallazgo suelto. */
+  actividadId?: string
+  /** "Después": qué se hizo / cómo quedó. Se completa cuando se soluciona, puede ser días después. */
+  solucion?: string
+  /** ISO date en que se registró la solución. */
+  fechaSolucion?: string
   creadoEn: string
   actualizadoEn: string
+}
+
+/** Fotos del "después" de un hallazgo. Las del "antes" no llevan etiqueta (compatible con datos existentes). */
+export const ETIQUETA_FOTO_DESPUES = 'Evidencia de cierre'
+
+export function estaResuelto(p: Pendiente): boolean {
+  return p.estado === 'CERRADO'
+}
+
+export function estaAbierto(p: Pendiente): boolean {
+  return p.estado !== 'CERRADO' && p.estado !== 'CANCELADO'
 }
 
 export type EntidadFoto = 'ACTIVIDAD' | 'HALLAZGO' | 'PENDIENTE' | 'EVIDENCIA_CIERRE'
@@ -208,7 +225,7 @@ export interface Foto {
   entidadId: string
   blob: Blob
   nombreArchivo: string
-  /** Ej. "Evidencia de cierre" para distinguir fotos de apertura vs. cierre de un pendiente. */
+  /** ETIQUETA_FOTO_DESPUES para las fotos de la solución; sin etiqueta = fotos del "antes". */
   etiqueta?: string
   creadoEn: string
 }

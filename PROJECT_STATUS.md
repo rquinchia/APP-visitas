@@ -15,6 +15,40 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Hallazgos por actividad (antes/después) + informes ejecutivos (2026-10-13)
+
+Pedido del usuario: en una actividad como "Diagnóstico general" salen muchas observaciones; cada
+una debe registrarse con su foto (antes) y, cuando se solucione (puede ser días después), con la
+foto y un texto de qué se hizo/cómo queda (después). Los informes de WhatsApp y correo (diario y
+final) deben presentarlo ordenado y con calidad ejecutiva.
+
+- **Decisión de modelo**: un hallazgo ES el mismo registro `Pendiente` (no una entidad nueva), con
+  campos opcionales nuevos `actividadId`, `solucion`, `fechaSolucion`. Así no hay dos conceptos
+  paralelos y Pendientes/Informes siguen siendo coherentes. Las fotos del "después" usan la etiqueta
+  existente `ETIQUETA_FOTO_DESPUES` ("Evidencia de cierre"): los datos anteriores siguen sirviendo.
+  Sin cambio de esquema de IndexedDB ni del formato de respaldo.
+- **Hoy**: cada actividad muestra su bloque "Hallazgos" con miniaturas antes → después, código y
+  estado, y "+ Agregar" (`components/HallazgosActividad.tsx`). El día va en la URL (`?dia=`) para
+  volver al mismo día.
+- **Formulario de hallazgo** (`PendienteForm.tsx`) en 3 bloques: Antes (descripción, equipo,
+  fotos) · Clasificación y plan de acción · Después (solución + fotos + "Marcar como resuelto" /
+  "Reabrir"). El id se genera al abrir y el registro se autoguarda al adjuntar la primera foto,
+  así se pueden tomar fotos sin pulsar antes "Guardar".
+- **Códigos H-01, H-02…** por visita (orden de registro, `lib/hallazgos.ts`), iguales en la app,
+  WhatsApp y correo.
+- **Informes** (`lib/reportes.ts`, reescrito; fotos en `lib/datosInforme.ts`): misma estructura en
+  diario y final — indicadores, resumen ejecutivo automático, actividades, hallazgos (mejoras
+  implementadas con fotos antes/después lado a lado; luego los que requieren acción con su plan),
+  evidencias, plan del día siguiente (incluye lo que se arrastra), pendientes con responsable y
+  compromiso (en rojo si falta o está vencido). HTML solo con tablas y estilos en línea (Outlook
+  de escritorio); miniaturas recortadas a 4:3 para que queden alineadas.
+- **Corrección de fechas**: `new Date("YYYY-MM-DD")` se interpretaba como UTC → en Colombia el
+  "Día N" de la visita salía un día adelantado, y `toISOString().slice(0,10)` fechaba los registros
+  hechos después de las 7 p. m. al día siguiente. Ahora todo usa fecha local (`lib/id.ts`).
+- **Verificado** con `typecheck`/`build` y una prueba visual real: Edge headless (CDP) con datos de
+  ejemplo, capturas de Hoy, hallazgo, reporte y cierre a 390 px, y los `.eml` descargados
+  convertidos a HTML y revisados en 680 px y 390 px (8 imágenes, ~100 KB, asunto con tildes OK).
+
 ## Fotos desde el álbum (2026-10-13)
 
 - **Bug**: en el iPhone no se podían cargar fotos de la fototeca, solo tomar una nueva. Causa:

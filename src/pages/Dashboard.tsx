@@ -6,6 +6,7 @@ import { FECHA_POR_DEFECTO, RESPONSABLE_POR_DEFECTO, TIPOS_VISITA } from '../typ
 import EstadoBadge from '../components/EstadoBadge'
 import BarraProgreso from '../components/BarraProgreso'
 import { calcularAvance, diaActual, type ResumenAvance } from '../lib/progreso'
+import { hoyLocal } from '../lib/id'
 import { PageHeader, SectionTitle } from '../components/ui'
 import { Plus } from 'lucide-react'
 
@@ -15,7 +16,7 @@ interface VisitaConAvance {
 }
 
 function resumenPendientes(pendientes: Pendiente[]) {
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = hoyLocal()
   const abiertos = pendientes.filter((p) => p.estado !== 'CERRADO' && p.estado !== 'CANCELADO')
   return {
     p1: abiertos.filter((p) => p.prioridad === 'P1').length,

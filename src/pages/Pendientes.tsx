@@ -6,6 +6,7 @@ import { ESTADOS_PENDIENTE, FECHA_POR_DEFECTO, PRIORIDADES_PENDIENTE, RESPONSABL
 import { PrioridadBadge, EstadoPendienteBadge } from '../components/PendienteBadges'
 import { PageHeader } from '../components/ui'
 import { Plus } from 'lucide-react'
+import { hoyLocal } from '../lib/id'
 
 const ORDEN_PRIORIDAD: Record<PrioridadPendiente, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
 
@@ -35,12 +36,16 @@ export default function Pendientes() {
       navigate('/visitas/nueva')
       return
     }
-    navigate(visitaIdFiltro ? `/pendientes/nuevo?visitaId=${visitaIdFiltro}` : '/pendientes/nuevo')
+    navigate(
+      visitaIdFiltro
+        ? `/pendientes/nuevo?visitaId=${visitaIdFiltro}&volver=${encodeURIComponent(`/pendientes?visitaId=${visitaIdFiltro}`)}`
+        : '/pendientes/nuevo',
+    )
   }
 
   if (pendientes === null) return <p className="text-sm text-slate-500">Cargando…</p>
 
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = hoyLocal()
   let filtrados = visitaIdFiltro ? pendientes.filter((p) => p.visitaId === visitaIdFiltro) : pendientes
   filtrados = filtrados.filter((p) =>
     filtroEstado === 'TODOS' ? true : filtroEstado === 'ABIERTOS' ? p.estado !== 'CERRADO' && p.estado !== 'CANCELADO' : p.estado === filtroEstado,
@@ -58,7 +63,7 @@ export default function Pendientes() {
         accion={
           <button
             onClick={onNuevo}
-            aria-label="Nuevo pendiente"
+            aria-label="Nuevo hallazgo"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white shadow-md shadow-accent/30"
           >
             <Plus className="h-5 w-5" strokeWidth={2.6} />
@@ -107,7 +112,7 @@ export default function Pendientes() {
         return (
           <Link
             key={p.id}
-            to={`/pendientes/${p.id}/editar`}
+            to={`/pendientes/${p.id}/editar?volver=${encodeURIComponent(visitaIdFiltro ? `/pendientes?visitaId=${visitaIdFiltro}` : '/pendientes')}`}
             className="block rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4 active:bg-slate-50"
           >
             <div className="flex items-start justify-between gap-2">
@@ -117,6 +122,12 @@ export default function Pendientes() {
                 </p>
                 <p className="truncate text-sm font-semibold text-slate-900">{p.descripcion || '(sin descripción)'}</p>
                 {p.equipo && <p className="text-xs text-slate-500">{p.equipo}</p>}
+                {p.solucion && (
+                  <p className="mt-0.5 truncate text-xs text-emerald-700">
+                    {p.estado === 'CERRADO' ? '✓ ' : '↻ '}
+                    {p.solucion}
+                  </p>
+                )}
               </div>
               <PrioridadBadge prioridad={p.prioridad} />
             </div>

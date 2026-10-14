@@ -4,6 +4,9 @@ import { eliminarFoto, guardarFoto, listarFotosPorEntidad } from '../db'
 import { generarId, ahoraISO } from '../lib/id'
 import type { EntidadFoto, Foto } from '../types'
 
+const claseBoton =
+  'tap flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-300 text-slate-500'
+
 interface Props {
   visitaId: string
   entidadTipo: EntidadFoto
@@ -11,16 +14,24 @@ interface Props {
   /** Permite separar fotos del mismo registro, p.ej. evidencia de apertura vs. evidencia de cierre. */
   etiqueta?: string
   titulo?: string
+  /** Si se indica, los botones se desactivan y se muestra este aviso (p.ej. "Escribe primero qué identificaste"). */
+  bloqueadoMotivo?: string
+  /** Se ejecuta antes de guardar las fotos (p.ej. para guardar primero el registro dueño). Si devuelve false, no se guardan. */
+  antesDeGuardar?: () => Promise<boolean>
+  /** Avisa al padre cuando cambia la cantidad de fotos. */
+  onCambio?: (cantidad: number) => void
 }
 
-export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta, titulo }: Props) {
+export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta, titulo, bloqueadoMotivo, antesDeGuardar, onCambio }: Props) {
   const [fotos, setFotos] = useState<Foto[]>([])
   const [urls, setUrls] = useState<Record<string, string>>({})
   const [indiceAmpliado, setIndiceAmpliado] = useState<number | null>(null)
 
   async function cargar() {
     const todas = await listarFotosPorEntidad(entidadId)
-    setFotos(todas.filter((f) => (f.etiqueta ?? '') === (etiqueta ?? '')))
+    const propias = todas.filter((f) => (f.etiqueta ?? '') === (etiqueta ?? ''))
+    setFotos(propias)
+    onCambio?.(propias.length)
   }
 
   useEffect(() => {
@@ -47,6 +58,10 @@ export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta
   async function onArchivos(e: ChangeEvent<HTMLInputElement>) {
     const archivos = e.target.files
     if (!archivos || archivos.length === 0) return
+    if (antesDeGuardar && !(await antesDeGuardar())) {
+      e.target.value = ''
+      return
+    }
     let guardadas = 0
     let fallo = false
     for (const archivo of Array.from(archivos)) {
@@ -114,17 +129,18 @@ export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta
         ))}
         {/* Dos entradas separadas: con `capture` el iPhone abre directo la cámara y no deja elegir
             del álbum; sin `capture` muestra la fototeca (con selección múltiple). */}
-        <label className="tap flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-300 text-slate-500">
+        <label className={`${claseBoton} ${bloqueadoMotivo ? 'pointer-events-none opacity-40' : 'cursor-pointer'}`}>
           <Camera size={22} />
           <span className="text-[10px]">Cámara</span>
-          <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onArchivos} />
+          <input type="file" accept="image/*" capture="environment" disabled={!!bloqueadoMotivo} className="hidden" onChange={onArchivos} />
         </label>
-        <label className="tap flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-300 text-slate-500">
+        <label className={`${claseBoton} ${bloqueadoMotivo ? 'pointer-events-none opacity-40' : 'cursor-pointer'}`}>
           <Images size={22} />
           <span className="text-[10px]">Álbum</span>
-          <input type="file" accept="image/*" multiple className="hidden" onChange={onArchivos} />
+          <input type="file" accept="image/*" multiple disabled={!!bloqueadoMotivo} className="hidden" onChange={onArchivos} />
         </label>
       </div>
+      {bloqueadoMotivo && <p className="mt-1 text-[11px] text-slate-400">{bloqueadoMotivo}</p>}
 
       {fotoAmpliada && indiceAmpliado !== null && (
         <div

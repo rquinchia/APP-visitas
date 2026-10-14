@@ -56,6 +56,17 @@ textarea {
   font: inherit;
 }
 
+/* Vista previa editable del informe de correo: que se vea como en Outlook (las tablas del informe
+   traen sus propios estilos en línea; aquí solo se neutraliza el reset de Tailwind). */
+.informe-cuerpo {
+  font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+.informe-cuerpo img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 ::selection {
   background-color: rgb(2 132 199 / 0.25); /* accent */
 }

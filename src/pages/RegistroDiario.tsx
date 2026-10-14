@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { AlertCircle, Send, Zap } from 'lucide-react'
-import { guardarActividad, listarActividadesPorVisita, obtenerVisita } from '../db'
+import { guardarActividad, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { Card, ListGroup, ListRow, PageHeader, SectionTitle } from '../components/ui'
 import { ahoraISO } from '../lib/id'
 import { calcularAvance, diaActual } from '../lib/progreso'
-import type { Actividad, EstadoActividad, Visita } from '../types'
+import { codigosHallazgos } from '../lib/hallazgos'
+import type { Actividad, EstadoActividad, Pendiente, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD } from '../types'
 import BarraProgreso from '../components/BarraProgreso'
 import FotosPicker from '../components/FotosPicker'
+import HallazgosActividad from '../components/HallazgosActividad'
 
 const ESTILOS_ESTADO: Record<EstadoActividad, string> = {
   PENDIENTE: 'bg-white text-slate-600 border-slate-300',
@@ -25,12 +27,21 @@ export default function RegistroDiario() {
   const { id } = useParams<{ id: string }>()
   const [visita, setVisita] = useState<Visita | null | undefined>(undefined)
   const [actividades, setActividades] = useState<Actividad[]>([])
-  const [dia, setDia] = useState(1)
+  const [hallazgos, setHallazgos] = useState<Pendiente[]>([])
+  const [params, setParams] = useSearchParams()
+  const [dia, setDiaEstado] = useState(1)
   const [comentarios, setComentarios] = useState<Record<string, string>>({})
 
+  // El día va también en la URL, para que al volver de un hallazgo se regrese al mismo día.
+  function setDia(d: number) {
+    setDiaEstado(d)
+    setParams({ dia: String(d) }, { replace: true })
+  }
+
   async function refrescar(visitaId: string) {
-    const lista = await listarActividadesPorVisita(visitaId)
+    const [lista, pends] = await Promise.all([listarActividadesPorVisita(visitaId), listarPendientesPorVisita(visitaId)])
     setActividades(lista)
+    setHallazgos(pends)
   }
 
   useEffect(() => {
@@ -38,11 +49,13 @@ export default function RegistroDiario() {
     obtenerVisita(id).then((v) => {
       setVisita(v ?? null)
       if (v) {
+        const diaUrl = Number(params.get('dia'))
         const d = diaActual(v)
-        setDia(d && d > 0 ? d : 1)
+        setDiaEstado(diaUrl || (d && d > 0 ? d : 1))
       }
     })
     refrescar(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
@@ -51,6 +64,8 @@ export default function RegistroDiario() {
   const delDia = actividades.filter((a) => a.dia === dia).sort((a, b) => a.orden - b.orden)
   const avanceDia = calcularAvance(delDia)
   const avanceTotal = calcularAvance(actividades)
+  const volverAqui = `/visitas/${visita.id}/hoy?dia=${dia}`
+  const codigos = codigosHallazgos(hallazgos)
 
   async function marcarEstado(actividad: Actividad, estado: EstadoActividad) {
     try {
@@ -124,10 +139,11 @@ export default function RegistroDiario() {
           detalle="WhatsApp y Outlook, con fotos"
         />
         <ListRow
-          to={`/pendientes/nuevo?visitaId=${visita.id}`}
+          to={`/pendientes/nuevo?visitaId=${visita.id}&volver=${encodeURIComponent(volverAqui)}`}
           icono={AlertCircle}
           color="rojo"
-          titulo="Registrar hallazgo o pendiente"
+          titulo="Hallazgo general"
+          detalle="No ligado a una actividad del día"
         />
         <ListRow
           to={`/visitas/${visita.id}/plan/nueva?dia=${dia}&emergente=1`}
@@ -185,8 +201,16 @@ export default function RegistroDiario() {
             />
 
             <div className="mt-3">
-              <FotosPicker visitaId={visita.id} entidadTipo="ACTIVIDAD" entidadId={a.id} />
+              <FotosPicker visitaId={visita.id} entidadTipo="ACTIVIDAD" entidadId={a.id} titulo="Fotos de la actividad" />
             </div>
+
+            <HallazgosActividad
+              visitaId={visita.id}
+              actividadId={a.id}
+              hallazgos={hallazgos.filter((h) => h.actividadId === a.id).sort((x, y) => x.creadoEn.localeCompare(y.creadoEn))}
+              codigos={codigos}
+              volver={volverAqui}
+            />
           </Card>
         ))}
       </div>

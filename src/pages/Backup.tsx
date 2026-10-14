@@ -2,9 +2,10 @@ import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generarRespaldo, leerArchivoRespaldo, restaurarRespaldo, resumirRespaldo, type ResumenRespaldo } from '../lib/backup'
 import { PageHeader } from '../components/ui'
+import { hoyLocal } from '../lib/id'
 
 function nombreArchivoRespaldo() {
-  return `visitas-respaldo-${new Date().toISOString().slice(0, 10)}.json`
+  return `visitas-respaldo-${hoyLocal()}.json`
 }
 
 export default function Backup() {

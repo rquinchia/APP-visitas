@@ -1,22 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Copy, Mail, MessageCircle, RotateCcw, Share2 } from 'lucide-react'
-import { listarActividadesPorVisita, listarFotosPorEntidad, listarPendientesPorVisita, obtenerVisita } from '../db'
+import { listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { diaActual } from '../lib/progreso'
-import { blobAThumbnailDataUrl } from '../lib/imagenes'
+import { prepararGaleria, prepararHallazgos } from '../lib/datosInforme'
 import { descargarBorradorOutlook } from '../lib/outlook'
 import {
+  contextoDiario,
   copiarHtmlYTexto,
   envolverInformeHTML,
-  generarAsuntoOutlook,
-  generarInformeDiarioOutlookHTML,
+  generarAsuntoDiario,
+  generarInformeDiarioHTML,
   generarReporteWhatsApp,
+  type EncabezadoInforme,
 } from '../lib/reportes'
 import type { Actividad, Pendiente, Visita } from '../types'
 import { BotonPrimario, BotonSecundario, Card, PageHeader } from '../components/ui'
 import Segmentado from '../components/Segmentado'
+import EncabezadoInformeVista from '../components/EncabezadoInformeVista'
 
-const MAX_FOTOS_INFORME = 12
+const MAX_FOTOS_ACTIVIDADES = 6
 
 async function copiar(texto: string) {
   try {
@@ -25,14 +28,6 @@ async function copiar(texto: string) {
   } catch {
     alert('No se pudo copiar automáticamente. Selecciona el texto y cópialo manualmente.')
   }
-}
-
-async function cargarMiniaturas(actividades: Actividad[]): Promise<{ dataUrls: string[]; total: number }> {
-  const listas = await Promise.all(actividades.map((a) => listarFotosPorEntidad(a.id)))
-  const todas = listas.flat()
-  const capadas = todas.slice(0, MAX_FOTOS_INFORME)
-  const dataUrls = await Promise.all(capadas.map((f) => blobAThumbnailDataUrl(f.blob).catch(() => null)))
-  return { dataUrls: dataUrls.filter((u): u is string => !!u), total: todas.length }
 }
 
 function nombreSeguro(texto: string) {
@@ -50,7 +45,7 @@ export default function Reporte() {
   const [pestana, setPestana] = useState<'outlook' | 'whatsapp'>('outlook')
   const [textoWhatsApp, setTextoWhatsApp] = useState('')
   const [asuntoOutlook, setAsuntoOutlook] = useState('')
-  const [subtituloOutlook, setSubtituloOutlook] = useState('')
+  const [encabezado, setEncabezado] = useState<EncabezadoInforme | null>(null)
   const [semillaHtml, setSemillaHtml] = useState('')
   const [versionSemilla, setVersionSemilla] = useState(0)
   const [generando, setGenerando] = useState(true)
@@ -65,13 +60,16 @@ export default function Reporte() {
 
   async function generar(v: Visita, todasActs: Actividad[], todasPends: Pendiente[], d: number) {
     setGenerando(true)
-    const actsDia = todasActs.filter((a) => a.dia === d)
-    setTextoWhatsApp(generarReporteWhatsApp(v, actsDia, todasPends, d))
-    setAsuntoOutlook(generarAsuntoOutlook(v, actsDia, d))
-    const { dataUrls, total } = await cargarMiniaturas(actsDia)
-    const { subtitulo, cuerpoHtml } = generarInformeDiarioOutlookHTML(v, actsDia, todasPends, d, dataUrls, total)
-    setSubtituloOutlook(subtitulo)
-    setSemillaHtml(cuerpoHtml)
+    const ctx = contextoDiario(v, d, todasActs, todasPends)
+    setTextoWhatsApp(generarReporteWhatsApp(ctx))
+    setAsuntoOutlook(generarAsuntoDiario(ctx))
+    const [hallazgos, galeria] = await Promise.all([
+      prepararHallazgos(ctx.hallazgos, ctx.codigos, todasActs),
+      prepararGaleria(ctx.actsDia, MAX_FOTOS_ACTIVIDADES),
+    ])
+    const informe = generarInformeDiarioHTML(ctx, hallazgos, galeria)
+    setEncabezado(informe.encabezado)
+    setSemillaHtml(informe.cuerpoHtml)
     setVersionSemilla((n) => n + 1)
     setGenerando(false)
   }
@@ -105,8 +103,8 @@ export default function Reporte() {
   }
 
   function htmlFinal(): string | null {
-    if (!cuerpoRef.current || !visita) return null
-    return envolverInformeHTML(visita.planta || 'Planta', subtituloOutlook, cuerpoRef.current.innerHTML)
+    if (!cuerpoRef.current || !encabezado) return null
+    return envolverInformeHTML(encabezado, cuerpoRef.current.innerHTML)
   }
 
   function abrirEnOutlook() {
@@ -179,17 +177,13 @@ export default function Reporte() {
                 className="w-full bg-transparent text-sm font-medium text-slate-800 outline-none"
               />
             </div>
-            <div className="bg-gradient-to-br from-slate-900 to-sky-800 px-4 py-4 text-white">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-sky-300">Informe de visita técnica</p>
-              <p className="mt-1 text-lg font-bold">{visita.planta || 'Planta'}</p>
-              <p className="text-xs text-sky-100">{subtituloOutlook}</p>
-            </div>
+            <EncabezadoInformeVista encabezado={encabezado} />
             {generando && <p className="px-4 pt-3 text-xs text-slate-400">Preparando informe y fotos…</p>}
             <div
               ref={cuerpoRef}
               contentEditable
               suppressContentEditableWarning
-              className="max-h-[520px] min-h-[160px] overflow-y-auto px-4 py-2 outline-none"
+              className="informe-cuerpo max-h-[620px] min-h-[160px] overflow-y-auto px-3 py-2 outline-none"
             />
             <p className="border-t border-slate-100 px-4 py-2 text-[11px] text-slate-400">
               ✏️ Toca el texto para editarlo: puedes agregar, borrar o corregir antes de enviarlo.
