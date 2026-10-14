@@ -6,6 +6,7 @@ import { Card, ListGroup, ListRow, PageHeader, SectionTitle } from '../component
 import { ahoraISO } from '../lib/id'
 import { calcularAvance, diaActual } from '../lib/progreso'
 import { codigosHallazgos } from '../lib/hallazgos'
+import { useDatosCambiados } from '../lib/eventos'
 import type { Actividad, EstadoActividad, Pendiente, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD } from '../types'
 import BarraProgreso from '../components/BarraProgreso'
@@ -57,6 +58,12 @@ export default function RegistroDiario() {
     refrescar(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  useDatosCambiados(() => {
+    if (!id) return
+    setComentarios({})
+    refrescar(id)
+  })
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visita === null) return <p className="text-sm text-rose-600">Visita no encontrada.</p>

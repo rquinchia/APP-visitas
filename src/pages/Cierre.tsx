@@ -14,6 +14,7 @@ import {
 import { prepararGaleria, prepararHallazgos } from '../lib/datosInforme'
 import { descargarBorradorOutlook } from '../lib/outlook'
 import EncabezadoInformeVista from '../components/EncabezadoInformeVista'
+import { usePuenteInforme } from '../lib/agente/usePuenteInforme'
 import { calcularAvance } from '../lib/progreso'
 import { aplicarTransicionEstado, buscarTransicion } from '../lib/transiciones'
 import type { Actividad, CambioHistorial, Foto, Pendiente, Visita } from '../types'
@@ -50,6 +51,7 @@ export default function Cierre() {
   const [versionSemilla, setVersionSemilla] = useState(0)
   const [generando, setGenerando] = useState(true)
   const [textoWhatsApp, setTextoWhatsApp] = useState('')
+  const [asuntoEditado, setAsuntoEditado] = useState<string | null>(null)
 
   const cuerpoRef = useRef<HTMLDivElement>(null)
 
@@ -93,6 +95,25 @@ export default function Cierre() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  const asuntoAuto = visita ? generarAsuntoInformeFinal(contextoFinal(visita, actividades, pendientes)) : ''
+  const asunto = asuntoEditado ?? asuntoAuto
+
+  usePuenteInforme({
+    tipo: 'final',
+    cuerpoRef,
+    whatsapp: textoWhatsApp,
+    setWhatsapp: setTextoWhatsApp,
+    asunto,
+    setAsunto: setAsuntoEditado,
+    regenerar: async () => {
+      if (!visita) return
+      const [acts, pends] = await Promise.all([listarActividadesPorVisita(visita.id), listarPendientesPorVisita(visita.id)])
+      setActividades(acts)
+      setPendientes(pends)
+      await generarInforme(visita, acts, pends)
+    },
+  })
+
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visita === null) return <p className="text-sm text-rose-600">Visita no encontrada.</p>
 
@@ -100,7 +121,6 @@ export default function Cierre() {
   const noEjecutadas = actividades.filter((a) => a.estado === 'PENDIENTE' || a.estado === 'EN_PROGRESO' || a.estado === 'BLOQUEADA')
   const abiertosVisita = pendientes.filter((p) => p.estado !== 'CERRADO' && p.estado !== 'CANCELADO')
   const formacion = actividades.filter((a) => a.tipo.toLowerCase().includes('formaci'))
-  const asunto = generarAsuntoInformeFinal(contextoFinal(visita, actividades, pendientes))
   const transicionTerminar = buscarTransicion(visita.estado, 'VISITA_TERMINADA')
 
   function htmlFinal(): string | null {

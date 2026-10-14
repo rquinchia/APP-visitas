@@ -18,6 +18,7 @@ import type { Actividad, Pendiente, Visita } from '../types'
 import { BotonPrimario, BotonSecundario, Card, PageHeader } from '../components/ui'
 import Segmentado from '../components/Segmentado'
 import EncabezadoInformeVista from '../components/EncabezadoInformeVista'
+import { usePuenteInforme } from '../lib/agente/usePuenteInforme'
 
 const MAX_FOTOS_ACTIVIDADES = 6
 
@@ -92,6 +93,23 @@ export default function Reporte() {
     cargar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  // El asistente puede leer y ajustar este informe; "regenerar" relee los datos (pudo cambiarlos él).
+  usePuenteInforme({
+    tipo: 'diario',
+    cuerpoRef,
+    whatsapp: textoWhatsApp,
+    setWhatsapp: setTextoWhatsApp,
+    asunto: asuntoOutlook,
+    setAsunto: setAsuntoOutlook,
+    regenerar: async () => {
+      if (!visita) return
+      const [acts, pends] = await Promise.all([listarActividadesPorVisita(visita.id), listarPendientesPorVisita(visita.id)])
+      setActividades(acts)
+      setPendientes(pends)
+      await generar(visita, acts, pends, dia)
+    },
+  })
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visita === null) return <p className="text-sm text-rose-600">Visita no encontrada.</p>

@@ -7,6 +7,7 @@ import { PrioridadBadge, EstadoPendienteBadge } from '../components/PendienteBad
 import { PageHeader } from '../components/ui'
 import { Plus } from 'lucide-react'
 import { hoyLocal } from '../lib/id'
+import { useDatosCambiados } from '../lib/eventos'
 
 const ORDEN_PRIORIDAD: Record<PrioridadPendiente, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
 
@@ -19,12 +20,14 @@ export default function Pendientes() {
   const [filtroEstado, setFiltroEstado] = useState<'ABIERTOS' | 'TODOS' | EstadoPendiente>('ABIERTOS')
   const [filtroPrioridad, setFiltroPrioridad] = useState<'TODAS' | PrioridadPendiente>('TODAS')
 
-  useEffect(() => {
+  function cargar() {
     Promise.all([listarTodosPendientes(), listarVisitas()]).then(([p, v]) => {
       setPendientes(p)
       setVisitas(v)
     })
-  }, [])
+  }
+  useEffect(cargar, [])
+  useDatosCambiados(cargar)
 
   function nombrePlanta(visitaId: string) {
     return visitas.find((v) => v.id === visitaId)?.planta || 'Planta sin definir'

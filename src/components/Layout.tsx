@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Archive, Factory, LayoutGrid, ListTodo, Settings, type LucideIcon } from 'lucide-react'
 import EstadoApp from './EstadoApp'
+import AsistenteAgente from './AsistenteAgente'
 
 const NAV_ITEMS: { to: string; label: string; icono: LucideIcon; fin: boolean }[] = [
   { to: '/', label: 'Panel', icono: LayoutGrid, fin: true },
@@ -53,6 +54,7 @@ export default function Layout() {
           ))}
         </nav>
       </div>
+      {location.pathname !== '/ajustes' && <AsistenteAgente />}
     </div>
   )
 }

@@ -40,11 +40,16 @@ export default function Ajustes() {
     <div className="flex flex-col gap-4 pb-8">
       <PageHeader titulo="Ajustes" atras="/" atrasEtiqueta="Panel" />
       <section className="rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60 p-4">
-        <h2 className="text-sm font-semibold text-slate-800">✨ Asistente de redacción con IA</h2>
+        <h2 className="text-sm font-semibold text-slate-800">✨ Asistente con IA (Google Gemini)</h2>
         <p className="mt-1 text-xs text-slate-500">
           Usa tu propia cuenta de Google (Gemini), gratis. La clave se guarda solo en este dispositivo (nunca se sube a
-          ningún lado). Al usar el asistente, el texto que escribas se envía a los servidores de Google para generar
-          la respuesta — ten esto presente con información sensible.
+          ningún lado). Al usar el asistente se envía a Google lo que escribes y, para que pueda actuar, el texto de la
+          visita en curso (actividades, hallazgos e informe en pantalla; nunca las fotos). En el nivel gratuito Google
+          puede usar esos datos para mejorar sus productos — ten esto presente con información sensible.
+        </p>
+        <p className="mt-2 text-xs text-slate-500">
+          Si Google responde "alta demanda" (código 503), la app reintenta sola y, si sigue saturado, cambia a otro modelo
+          de Gemini disponible en tu cuenta.
         </p>
 
         <label className="mb-1 mt-3 block text-xs font-medium text-slate-600">Clave de API de Google Gemini</label>

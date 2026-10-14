@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CalendarCheck, ClipboardList, FileText, Flag, ListTodo, Send, type LucideIcon } from 'lucide-react'
 import { guardarVisita, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { ahoraISO } from '../lib/id'
+import { useDatosCambiados } from '../lib/eventos'
 import type { Actividad, EstadoVisita, Pendiente, Visita } from '../types'
 import { TIPOS_VISITA } from '../types'
 import EstadoBadge from '../components/EstadoBadge'
@@ -50,6 +51,12 @@ export default function VisitaDetalle() {
     listarActividadesPorVisita(id).then(setActividades)
     listarPendientesPorVisita(id).then(setPendientes)
   }, [id])
+
+  useDatosCambiados(() => {
+    if (!id) return
+    listarActividadesPorVisita(id).then(setActividades)
+    listarPendientesPorVisita(id).then(setPendientes)
+  })
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visita === null) return <p className="text-sm text-rose-600">Visita no encontrada.</p>

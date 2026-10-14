@@ -17,6 +17,7 @@ export default function AsistenteIA({ contexto, valorActual, onInsertar }: Props
   const [sugerencia, setSugerencia] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
+  const [estado, setEstado] = useState('')
 
   function reiniciar() {
     setAbierto(false)
@@ -47,7 +48,7 @@ export default function AsistenteIA({ contexto, valorActual, onInsertar }: Props
       : instruccion
     const nuevoHistorial: MensajeIA[] = [...historial, { role: 'user', content: contenido }]
     try {
-      const texto = await generarTextoIA(nuevoHistorial)
+      const texto = await generarTextoIA(nuevoHistorial, setEstado)
       setHistorial([...nuevoHistorial, { role: 'assistant', content: texto }])
       setSugerencia(texto)
       setPregunta('')
@@ -55,6 +56,7 @@ export default function AsistenteIA({ contexto, valorActual, onInsertar }: Props
       setError(e instanceof ErrorIA ? e.message : 'Ocurrió un error inesperado.')
     } finally {
       setCargando(false)
+      setEstado('')
     }
   }
 
@@ -85,6 +87,7 @@ export default function AsistenteIA({ contexto, valorActual, onInsertar }: Props
       {sugerencia && <div className="rounded-md border border-slate-200 bg-white p-2 text-sm text-slate-800">{sugerencia}</div>}
 
       {error && <p className="text-xs font-medium text-rose-600">{error}</p>}
+      {cargando && estado && <p className="text-[11px] text-slate-500">{estado}</p>}
 
       <div className="flex gap-2">
         <input

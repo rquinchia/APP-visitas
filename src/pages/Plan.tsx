@@ -5,6 +5,7 @@ import { ahoraISO } from '../lib/id'
 import { registrarCambioPlan } from '../lib/historial'
 import { diaActual } from '../lib/progreso'
 import { codigosHallazgos } from '../lib/hallazgos'
+import { useDatosCambiados } from '../lib/eventos'
 import type { Actividad, EstadoActividad, Pendiente, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD } from '../types'
 import FotosPicker from '../components/FotosPicker'
@@ -32,6 +33,10 @@ export default function Plan() {
     obtenerVisita(id).then((v) => setVisita(v ?? null))
     refrescar(id)
   }, [id])
+
+  useDatosCambiados(() => {
+    if (id) refrescar(id)
+  })
 
   // Al volver de un hallazgo (?dia=N), regresar a la vista del mismo día.
   useEffect(() => {

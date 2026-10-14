@@ -15,6 +15,38 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Asistente tipo agente + Gemini resistente a 503 (2026-10-13)
+
+Pedido: Gemini dio "503 alta demanda"; el usuario pidió cambiar a ChatGPT iniciando sesión con su
+cuenta **Business**, y un asistente flotante que actúe sobre la app (completar campos, preguntar con
+opciones, corregir informes).
+
+- **ChatGPT con cuenta Business: no viable hoy.** "Sign in with ChatGPT" (DevDay, 29-sep-2026)
+  permite usar el plan solo a usuarios **Plus y Pro**, y para apps alojadas en internet exige
+  formulario de interés/aprobación de OpenAI (developers.openai.com/siwc). La API de OpenAI es
+  facturación aparte (ya descartada por el usuario). Se mantiene Gemini.
+- **503**: `src/lib/gemini.ts` reintenta con espera (1,2 s y 3,5 s) y, si sigue saturado, o con
+  429/404, consulta la lista real de modelos `flash` de la cuenta y cambia de modelo; recuerda el
+  último que funcionó (`localStorage ia_gemini_modelo`). Lo usan el asistente de campos y el agente.
+- **Agente** (`src/lib/agente/`): Gemini con function calling. Contexto en cada turno: pantalla,
+  visita, actividades (ref `act_xxxxxx`), hallazgos (H-xx) y, en Reporte/Cierre, el texto del
+  informe en pantalla. Herramientas: `actualizar_actividad`, `crear_hallazgo`,
+  `actualizar_hallazgo`, `preguntar_usuario` (opciones con un toque), `abrir_pantalla` y, solo con
+  un informe abierto, `editar_texto_informe`, `agregar_punto_resumen`, `reemplazar_whatsapp`,
+  `cambiar_asunto`, `regenerar_informe`. Cada acción muestra "Deshacer". Límites: no cambia el
+  estado de la visita, no crea/elimina actividades, no adjunta fotos.
+- Las "firmas de pensamiento" de Gemini se devuelven tal cual (el contenido del modelo se guarda
+  sin modificar); las respuestas de herramientas van con su `id`.
+- Pantallas que se recargan solas cuando el asistente cambia datos: `lib/eventos.ts`
+  (`useDatosCambiados`). Puente con el informe abierto: `lib/agente/usePuenteInforme.ts`.
+- UI: `components/AsistenteAgente.tsx` (botón flotante ✨ sobre la barra inferior; hoja de chat que
+  conserva la conversación al navegar).
+- **Verificado** en Edge headless con un Gemini simulado (primero 503, luego respuestas
+  guionizadas): reintento visible, actualización de actividad, pregunta con opciones, creación de
+  H-05, recarga de "Hoy", punto agregado al resumen del informe, y forma de las peticiones (firma
+  conservada, ids pareados, herramientas del informe solo en Reporte). **No probado contra Gemini
+  real** (no hay clave en este entorno): falta que el usuario lo pruebe con su clave.
+
 ## Hallazgos también en el Plan + captura rápida (2026-10-13, feedback)
 
 El usuario no encontraba cómo cargar varias observaciones en el **Plan** (los hallazgos solo

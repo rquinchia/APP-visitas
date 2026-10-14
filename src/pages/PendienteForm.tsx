@@ -18,6 +18,7 @@ import {
 import FotosPicker from '../components/FotosPicker'
 import AsistenteIA from '../components/AsistenteIA'
 import { PageHeader } from '../components/ui'
+import { useDatosCambiados } from '../lib/eventos'
 
 const VACIO = {
   visitaId: '',
@@ -33,6 +34,24 @@ const VACIO = {
   estado: 'ABIERTO' as EstadoPendiente,
   comentarios: '',
   solucion: '',
+}
+
+function camposDesde(p: Pendiente): typeof VACIO {
+  return {
+    visitaId: p.visitaId,
+    actividadId: p.actividadId ?? '',
+    equipo: p.equipo,
+    descripcion: p.descripcion,
+    categoria: p.categoria,
+    impacto: p.impacto,
+    prioridad: p.prioridad,
+    accionPropuesta: p.accionPropuesta,
+    responsable: p.responsable === RESPONSABLE_POR_DEFECTO ? '' : p.responsable,
+    fechaCompromiso: p.fechaCompromiso === FECHA_POR_DEFECTO ? '' : p.fechaCompromiso,
+    estado: p.estado,
+    comentarios: p.comentarios,
+    solucion: p.solucion ?? '',
+  }
 }
 
 /**
@@ -69,21 +88,7 @@ export default function PendienteForm() {
         const p = await obtenerPendiente(pendienteId)
         if (p) {
           setOriginal(p)
-          setCampos({
-            visitaId: p.visitaId,
-            actividadId: p.actividadId ?? '',
-            equipo: p.equipo,
-            descripcion: p.descripcion,
-            categoria: p.categoria,
-            impacto: p.impacto,
-            prioridad: p.prioridad,
-            accionPropuesta: p.accionPropuesta,
-            responsable: p.responsable === RESPONSABLE_POR_DEFECTO ? '' : p.responsable,
-            fechaCompromiso: p.fechaCompromiso === FECHA_POR_DEFECTO ? '' : p.fechaCompromiso,
-            estado: p.estado,
-            comentarios: p.comentarios,
-            solucion: p.solucion ?? '',
-          })
+          setCampos(camposDesde(p))
         }
       } else {
         const visitaId = params.get('visitaId') || listaVisitas[0]?.id || ''
@@ -107,6 +112,18 @@ export default function PendienteForm() {
     if (a?.equipoProceso) setCampos((c) => ({ ...c, equipo: a.equipoProceso }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actividades, campos.actividadId])
+
+  // Si el asistente modificó este mismo hallazgo, mostrar su versión.
+  useDatosCambiados(async ({ ids }) => {
+    if (!ids.includes(idRegistro)) return
+    const p = await obtenerPendiente(idRegistro)
+    if (p) {
+      setOriginal(p)
+      setCampos(camposDesde(p))
+      setVerPlan(true)
+      setVerDespues(!!p.solucion || p.estado === 'CERRADO')
+    }
+  })
 
   if (cargando) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visitas.length === 0) return <p className="text-sm text-rose-600">Primero crea una visita.</p>

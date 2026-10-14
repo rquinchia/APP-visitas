@@ -139,6 +139,19 @@ export async function guardarPendiente(pendiente: Pendiente): Promise<void> {
   await db.put('pendientes', pendiente)
 }
 
+/** Elimina un hallazgo/pendiente y sus fotos. */
+export async function eliminarPendiente(id: string): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(['pendientes', 'fotos'], 'readwrite')
+  await tx.objectStore('pendientes').delete(id)
+  let cursor = await tx.objectStore('fotos').index('entidadId').openCursor(IDBKeyRange.only(id))
+  while (cursor) {
+    await cursor.delete()
+    cursor = await cursor.continue()
+  }
+  await tx.done
+}
+
 // --- Historial de plan ---
 
 export async function listarHistorialPorVisita(visitaId: string): Promise<CambioHistorial[]> {

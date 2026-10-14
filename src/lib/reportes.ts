@@ -405,21 +405,26 @@ function indicadores(items: Kpi[]): string {
 }
 
 /** Las viñetas ya vienen en HTML (con valores escapados), para poder resaltar cifras en negrita. */
-function resumenEjecutivo(vinetas: string[]): string {
-  const filas = vinetas
-    .map(
-      (v) => `
+function filaResumen(vinetaHtml: string): string {
+  return `
     <tr>
       <td valign="top" width="16" style="padding:4px 0;color:${C.azul};font-size:14px;font-weight:800;">›</td>
-      <td style="padding:4px 0;font-size:14px;line-height:1.5;color:${C.texto};">${v}</td>
-    </tr>`,
-    )
-    .join('')
+      <td style="padding:4px 0;font-size:14px;line-height:1.5;color:${C.texto};">${vinetaHtml}</td>
+    </tr>`
+}
+
+/** Viñeta adicional para el resumen ejecutivo (la usa el asistente); el texto se escapa. */
+export function filaResumenTexto(texto: string): string {
+  return filaResumen(esc(texto))
+}
+
+function resumenEjecutivo(vinetas: string[]): string {
+  const filas = vinetas.map(filaResumen).join('')
   return `
 <table ${TABLA} style="margin:18px 0 0;"><tr>
   <td style="background:${C.azulFondo};border-left:4px solid ${C.azul};border-radius:0 12px 12px 0;padding:14px 16px;">
     <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:${C.azul};text-transform:uppercase;letter-spacing:.06em;">Resumen ejecutivo</p>
-    <table ${TABLA}>${filas}</table>
+    <table ${TABLA} data-resumen="1">${filas}</table>
   </td>
 </tr></table>`
 }
