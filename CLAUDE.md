@@ -67,6 +67,12 @@ actividades), etiquetarla siempre como:
 - Stack: **Vite + React + TypeScript**, `vite-plugin-pwa` (service worker + manifest),
   **Tailwind CSS** (diseño sobrio/industrial), **IndexedDB** vía `idb` para persistencia local
   robusta (visitas, actividades, hallazgos, pendientes, fotos como Blob).
+- Asistente de IA con dos proveedores a elección del usuario, siempre con SU clave guardada solo en
+  el dispositivo: Google Gemini (REST directo, `lib/gemini.ts`) y Claude (SDK `@anthropic-ai/sdk`,
+  `lib/claude.ts`). Con Claude el historial del agente debe ser solo-agregar (ver PROJECT_STATUS).
+- Nada se borra con `window.confirm`/`prompt`: usar `confirmar()`/`pedirTexto()` de `lib/dialogo.ts`.
+  Toda eliminación pasa por `db` (registra lo eliminado para el respaldo); los hallazgos tienen número
+  permanente (`numero`), nunca renumerar.
 - Sin dependencias de Azure/Supabase/Firebase/Telegram/WhatsApp API/Microsoft Graph. Compartir por
   WhatsApp usa **Web Share API** con "copiar al portapapeles" como respaldo. Outlook usa
   texto para copiar/pegar y `mailto:` cuando sea posible — sin integraciones especiales.

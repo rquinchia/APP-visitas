@@ -195,6 +195,8 @@ export interface Pendiente {
   fechaCompromiso: string // FECHA_POR_DEFECTO si falta
   estado: EstadoPendiente
   comentarios: string
+  /** Número permanente dentro de la visita (código H-xx). No se renumera al eliminar otros. */
+  numero?: number
   /** Actividad del plan donde se identificó (p.ej. "Diagnóstico general"). Opcional: puede ser un hallazgo suelto. */
   actividadId?: string
   /** "Después": qué se hizo / cómo quedó. Se completa cuando se soluciona, puede ser días después. */

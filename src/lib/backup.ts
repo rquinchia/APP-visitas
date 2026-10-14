@@ -1,4 +1,5 @@
-import { escribirTodosLosDatos, obtenerTodosLosDatos } from '../db'
+import { aplicarEliminadosLocales, escribirTodosLosDatos, normalizarNumerosHallazgos, obtenerTodosLosDatos } from '../db'
+import { idsEliminados, leerEliminados, reemplazarEliminados, registrarEliminados, type Eliminado } from './eliminados'
 import type { Actividad, CambioHistorial, EntidadFoto, Pendiente, Visita } from '../types'
 
 const FORMATO = 'app-visitas-respaldo'
@@ -24,6 +25,8 @@ interface RespaldoJSON {
   pendientes: Pendiente[]
   historialPlan: CambioHistorial[]
   fotos: FotoRespaldo[]
+  /** Lo eliminado en el dispositivo de origen (opcional: respaldos anteriores no lo traen). */
+  eliminados?: Eliminado[]
 }
 
 function blobADataUrl(blob: Blob): Promise<string> {
@@ -64,6 +67,7 @@ export async function generarRespaldo(): Promise<Blob> {
     pendientes: datos.pendientes,
     historialPlan: datos.historialPlan,
     fotos,
+    eliminados: leerEliminados(),
   }
 
   return new Blob([JSON.stringify(respaldo)], { type: 'application/json' })
@@ -103,8 +107,15 @@ export function resumirRespaldo(respaldo: RespaldoJSON): ResumenRespaldo {
 }
 
 export async function restaurarRespaldo(respaldo: RespaldoJSON, opciones: { limpiarPrimero: boolean }): Promise<void> {
+  // Combinar: lo eliminado en cualquiera de los dos dispositivos queda eliminado (no "resucita").
+  // Reemplazar todo: manda el respaldo (permite recuperar a propósito una copia anterior).
+  if (opciones.limpiarPrimero) reemplazarEliminados(respaldo.eliminados ?? [])
+  else registrarEliminados(respaldo.eliminados ?? [])
+  const borrados = idsEliminados()
+  const vivo = <T extends { id: string }>(x: T) => !borrados.has(x.id)
+
   const fotos = await Promise.all(
-    respaldo.fotos.map(async (f) => ({
+    respaldo.fotos.filter(vivo).map(async (f) => ({
       id: f.id,
       visitaId: f.visitaId,
       entidadTipo: f.entidadTipo,
@@ -118,12 +129,14 @@ export async function restaurarRespaldo(respaldo: RespaldoJSON, opciones: { limp
 
   await escribirTodosLosDatos(
     {
-      visitas: respaldo.visitas,
-      actividades: respaldo.actividades,
-      pendientes: respaldo.pendientes,
-      historialPlan: respaldo.historialPlan,
+      visitas: respaldo.visitas.filter(vivo),
+      actividades: respaldo.actividades.filter(vivo),
+      pendientes: respaldo.pendientes.filter(vivo),
+      historialPlan: respaldo.historialPlan.filter(vivo),
       fotos,
     },
     opciones,
   )
+  await aplicarEliminadosLocales(borrados)
+  await normalizarNumerosHallazgos()
 }

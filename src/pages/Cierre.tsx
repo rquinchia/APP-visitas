@@ -15,6 +15,7 @@ import { prepararGaleria, prepararHallazgos } from '../lib/datosInforme'
 import { descargarBorradorOutlook } from '../lib/outlook'
 import EncabezadoInformeVista from '../components/EncabezadoInformeVista'
 import { usePuenteInforme } from '../lib/agente/usePuenteInforme'
+import { confirmar } from '../lib/dialogo'
 import { calcularAvance } from '../lib/progreso'
 import { aplicarTransicionEstado, buscarTransicion } from '../lib/transiciones'
 import type { Actividad, CambioHistorial, Foto, Pendiente, Visita } from '../types'
@@ -130,8 +131,12 @@ export default function Cierre() {
 
   function regenerar() {
     if (!visita) return
-    if (!window.confirm('Esto vuelve a generar el informe automáticamente y descarta tus ediciones. ¿Continuar?')) return
-    generarInforme(visita, actividades, pendientes)
+    const v = visita
+    confirmar({ titulo: '¿Regenerar el informe?', mensaje: 'Vuelve a generarlo con los datos actuales y descarta tus ediciones.', aceptar: 'Regenerar' }).then(
+      (ok) => {
+        if (ok) generarInforme(v, actividades, pendientes)
+      },
+    )
   }
 
   function abrirEnOutlook() {

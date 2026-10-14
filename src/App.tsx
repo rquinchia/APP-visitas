@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard'
 import Visitas from './pages/Visitas'
 import NuevaVisita from './pages/NuevaVisita'
 import VisitaDetalle from './pages/VisitaDetalle'
+import EditarVisita from './pages/EditarVisita'
 import Plan from './pages/Plan'
 import ActividadForm from './pages/ActividadForm'
 import PlanVistaPrevia from './pages/PlanVistaPrevia'
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="visitas" element={<Visitas />} />
           <Route path="visitas/nueva" element={<NuevaVisita />} />
           <Route path="visitas/:id" element={<VisitaDetalle />} />
+          <Route path="visitas/:id/editar" element={<EditarVisita />} />
           <Route path="visitas/:id/hoy" element={<RegistroDiario />} />
           <Route path="visitas/:id/reporte" element={<Reporte />} />
           <Route path="visitas/:id/cierre" element={<Cierre />} />

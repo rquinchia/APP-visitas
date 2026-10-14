@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { generarRespaldo, leerArchivoRespaldo, restaurarRespaldo, resumirRespaldo, type ResumenRespaldo } from '../lib/backup'
 import { PageHeader } from '../components/ui'
 import { hoyLocal } from '../lib/id'
+import { confirmar } from '../lib/dialogo'
 
 function nombreArchivoRespaldo() {
   return `visitas-respaldo-${hoyLocal()}.json`
@@ -67,10 +68,20 @@ export default function Backup() {
 
   async function restaurar(limpiarPrimero: boolean) {
     if (!archivoPendiente) return
-    const advertencia = limpiarPrimero
-      ? 'Esto REEMPLAZARÁ todos los datos actuales de la aplicación por los del respaldo. Esta acción no se puede deshacer. ¿Continuar?'
-      : '¿Combinar este respaldo con los datos actuales? Los registros con el mismo ID se sobrescribirán.'
-    if (!window.confirm(advertencia)) return
+    const ok = limpiarPrimero
+      ? await confirmar({
+          titulo: '¿Reemplazar todos los datos?',
+          mensaje: 'Los datos actuales de este dispositivo se sustituyen por los del respaldo. No se puede deshacer.',
+          aceptar: 'Reemplazar todo',
+          peligro: true,
+          escribir: 'REEMPLAZAR',
+        })
+      : await confirmar({
+          titulo: '¿Combinar este respaldo?',
+          mensaje: 'Se agregan los registros del respaldo; los que ya existen se actualizan y lo eliminado en cualquiera de los dos dispositivos queda eliminado.',
+          aceptar: 'Combinar',
+        })
+    if (!ok) return
 
     setImportando(true)
     try {

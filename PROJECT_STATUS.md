@@ -15,6 +15,47 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Eliminar y editar todo + Claude como segundo proveedor (2026-10-13)
+
+**Eliminar / editar** (el usuario: "no me deja eliminar nada ni editar campos"):
+- Causa: visitas y pendientes no tenían botón de eliminar (la función existía en `db` sin UI); los
+  datos de la visita solo permitían editar la fecha; y eliminar actividades dependía de
+  `window.confirm`/`prompt`, que en la app instalada en iPhone pueden no mostrarse o cancelarse.
+- Diálogos propios (`lib/dialogo.ts` + `components/Dialogos.tsx`) en todos los puntos que usaban
+  confirm/prompt (eliminar, motivo de cambio del plan, transiciones de estado, regenerar, respaldo).
+- Eliminar: hallazgo (con sus fotos), actividad (desde Plan o su formulario; sus hallazgos se
+  CONSERVAN como generales y sus fotos se borran; queda en el historial con motivo si el plan está
+  aprobado) y visita completa (`EditarVisita.tsx`, hay que escribir ELIMINAR).
+- Editar visita (`/visitas/:id/editar`): tipo, planta, cliente, responsable, objetivo, duración (no
+  menor que el último día con actividades) y fecha; cada cambio queda en el historial; renombrar la
+  planta actualiza la copia en cada hallazgo. Editar actividad también desde "Hoy" (lápiz).
+- Integridad: **números de hallazgo permanentes** (`Pendiente.numero`): eliminar no renumera
+  (H-03 sigue siendo H-03) y un número eliminado no se reutiliza. Datos anteriores se numeran al
+  arrancar (`normalizarNumerosHallazgos`) con los mismos códigos que ya mostraban; también antes de
+  crear o eliminar, y tras importar. **Registro de eliminados** (`lib/eliminados.ts`, en
+  localStorage y dentro del respaldo): al "Combinar" lo eliminado en un dispositivo no reaparece y se
+  elimina en el otro; "Reemplazar todo" adopta el registro del respaldo.
+- Verificado en Edge headless: borrar H-02 deja H-03/H-04; borrar "Diagnóstico general" (con motivo)
+  conserva sus hallazgos como generales y borra solo sus fotos; editar planta se refleja en informes
+  e historial; eliminar visita exige ELIMINAR y deja la base vacía; registro de eliminados correcto.
+
+**Claude** (el usuario pidió poder elegir entre Claude y Gemini, con su logo):
+- Selector Gemini / Claude en Ajustes y en el propio chat (logos en `components/LogosIA.tsx`). El ✨ de
+  cada campo usa el proveedor elegido.
+- Claude vía SDK oficial `@anthropic-ai/sdk` desde el navegador (`dangerouslyAllowBrowser`, clave del
+  usuario en el dispositivo), cargado solo al usarlo (chunk aparte). Modelo `claude-opus-5-5`,
+  `effort: medium`, `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`) y
+  `prefix_mismatch_behavior: "drop_block"` (beta `thinking-binding-controls-2026-08-01`).
+- La suscripción de claude.ai no sirve para apps propias: requiere clave de API de pago por uso
+  (console.anthropic.com). Se explicó en Ajustes.
+- Opus 5.5 liga su razonamiento a la conversación exacta, así que el motor de Claude
+  (`lib/agente/motores.ts`) mantiene `system` y `tools` fijos, nunca edita ni recorta el historial y
+  agrega el contexto de la app como mensaje `role: "system"` cuando cambia. Por eso las 10
+  herramientas se declaran siempre (las del informe devuelven error si no hay informe abierto).
+- Verificado con API simulada: 529 → reintento del SDK; historial solo-agregar entre las 4
+  peticiones; system/tools idénticos; mensajes system bien ubicados; firmas de razonamiento devueltas
+  intactas; tool_results juntos. Regresión de Gemini OK. **No probado contra la API real** (sin clave).
+
 ## Asistente tipo agente + Gemini resistente a 503 (2026-10-13)
 
 Pedido: Gemini dio "503 alta demanda"; el usuario pidió cambiar a ChatGPT iniciando sesión con su

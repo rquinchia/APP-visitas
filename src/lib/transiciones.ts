@@ -2,6 +2,7 @@ import { guardarVisita, registrarCambioHistorial } from '../db'
 import { generarId, ahoraISO } from './id'
 import type { EstadoVisita, Visita } from '../types'
 import { ETIQUETA_ESTADO } from '../types'
+import { pedirTexto } from './dialogo'
 
 export interface Transicion {
   destino: EstadoVisita
@@ -41,12 +42,13 @@ export async function aplicarTransicionEstado(visita: Visita, t: Transicion): Pr
     alert('Antes de iniciar la visita, guarda la fecha de inicio.')
     return null
   }
-  const confirmado = window.confirm(
-    `¿Confirmas: "${t.etiqueta}"?\n\nEstado actual: ${ETIQUETA_ESTADO[visita.estado]}\nNuevo estado: ${ETIQUETA_ESTADO[t.destino]}`,
-  )
-  if (!confirmado) return null
-
-  const motivo = window.prompt('Motivo del cambio (opcional):', '') ?? ''
+  const motivo = await pedirTexto({
+    titulo: `¿Confirmas «${t.etiqueta}»?`,
+    mensaje: `Estado actual: ${ETIQUETA_ESTADO[visita.estado]}\nNuevo estado: ${ETIQUETA_ESTADO[t.destino]}\n\nMotivo o comentario (opcional):`,
+    placeholder: 'Opcional',
+    aceptar: 'Confirmar',
+  })
+  if (motivo === null) return null
   const actualizada: Visita = { ...visita, estado: t.destino, actualizadoEn: ahoraISO() }
   await guardarVisita(actualizada)
   await registrarCambioHistorial({

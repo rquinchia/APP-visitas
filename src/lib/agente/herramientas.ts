@@ -20,7 +20,7 @@ import { codigosHallazgos } from '../hallazgos'
 import { avisarCambios } from '../eventos'
 import { refActividad, type DatosContexto } from './contexto'
 import { informeActivo } from './informeActivo'
-import { listarPendientesPorVisita } from '../../db'
+import { listarPendientesPorVisita, siguienteNumeroHallazgo } from '../../db'
 
 const ESTADOS_ACTIVIDAD = Object.keys(ETIQUETA_ESTADO_ACTIVIDAD) as EstadoActividad[]
 
@@ -64,8 +64,20 @@ const camposHallazgo = {
   resuelto: { type: 'boolean', description: 'true para marcarlo como resuelto (cerrado).' },
 }
 
-export function declaraciones(conInforme: boolean): unknown[] {
-  const base = [
+export interface DefinicionHerramienta {
+  name: string
+  description: string
+  /** JSON Schema (sirve tal cual para Gemini y para Claude). */
+  parameters: { type: 'object'; properties: Record<string, unknown>; required?: string[] }
+}
+
+/**
+ * Siempre el mismo conjunto, en el mismo orden: Claude exige que las herramientas no cambien durante la
+ * conversación (si no, descarta su razonamiento previo) y así también se aprovecha el caché. Las del
+ * informe responden con un error si no hay un informe abierto.
+ */
+export function definicionesHerramientas(): DefinicionHerramienta[] {
+  const base: DefinicionHerramienta[] = [
     {
       name: 'actualizar_actividad',
       description: 'Cambia el estado y/o la observación de una actividad del plan (registro diario).',
@@ -132,12 +144,11 @@ export function declaraciones(conInforme: boolean): unknown[] {
       },
     },
   ]
-  if (!conInforme) return [{ functionDeclarations: base }]
-  const informe = [
+  const informe: DefinicionHerramienta[] = [
     {
       name: 'editar_texto_informe',
       description:
-        'Reemplaza un fragmento exacto del texto del correo que el usuario está revisando (respeta formato y fotos). El fragmento debe copiarse tal cual del TEXTO DEL CORREO y ser corto (dentro de una misma frase).',
+        'Solo con un informe abierto en pantalla (Reporte del día o Cierre). Reemplaza un fragmento exacto del texto del correo que el usuario está revisando (respeta formato y fotos). El fragmento debe copiarse tal cual del TEXTO DEL CORREO y ser corto (dentro de una misma frase).',
       parameters: {
         type: 'object',
         properties: { buscar: { type: 'string' }, reemplazar: { type: 'string' } },
@@ -146,27 +157,27 @@ export function declaraciones(conInforme: boolean): unknown[] {
     },
     {
       name: 'agregar_punto_resumen',
-      description: 'Agrega una viñeta al "Resumen ejecutivo" del correo.',
+      description: 'Solo con un informe abierto. Agrega una viñeta al "Resumen ejecutivo" del correo.',
       parameters: { type: 'object', properties: { texto: { type: 'string' } }, required: ['texto'] },
     },
     {
       name: 'reemplazar_whatsapp',
-      description: 'Reemplaza el texto completo del mensaje de WhatsApp (conserva el formato *negrita* y los emojis).',
+      description: 'Solo con un informe abierto. Reemplaza el texto completo del mensaje de WhatsApp (conserva el formato *negrita* y los emojis).',
       parameters: { type: 'object', properties: { texto: { type: 'string' } }, required: ['texto'] },
     },
     {
       name: 'cambiar_asunto',
-      description: 'Cambia el asunto del correo.',
+      description: 'Solo con un informe abierto. Cambia el asunto del correo.',
       parameters: { type: 'object', properties: { texto: { type: 'string' } }, required: ['texto'] },
     },
     {
       name: 'regenerar_informe',
       description:
-        'Vuelve a generar el correo y el WhatsApp desde los datos actuales (úsalo después de corregir datos de actividades o hallazgos). Descarta las ediciones manuales del informe.',
+        'Solo con un informe abierto. Vuelve a generar el correo y el WhatsApp desde los datos actuales (úsalo después de corregir datos de actividades o hallazgos). Descarta las ediciones manuales del informe.',
       parameters: { type: 'object', properties: {} },
     },
   ]
-  return [{ functionDeclarations: [...base, ...informe] }]
+  return [...base, ...informe]
 }
 
 // ───────────────────────────── Ejecución ─────────────────────────────
@@ -273,6 +284,7 @@ export async function ejecutarHerramienta(nombre: string, args: Args, env: Entor
         estado: 'ABIERTO',
         comentarios: '',
         actividadId: act?.id,
+        numero: await siguienteNumeroHallazgo(visita.id),
         creadoEn: ahora,
         actualizadoEn: ahora,
       }
@@ -285,7 +297,7 @@ export async function ejecutarHerramienta(nombre: string, args: Args, env: Entor
         accion: {
           resumen: `Hallazgo ${codigo} creado${act ? ` en «${act.actividad}»` : ''}: ${nuevo.descripcion}`,
           deshacer: async () => {
-            await eliminarPendiente(nuevo.id)
+            await eliminarPendiente(nuevo.id, { reservarNumero: false })
             avisarCambios([nuevo.id])
           },
           enlace: `/pendientes/${nuevo.id}/editar`,

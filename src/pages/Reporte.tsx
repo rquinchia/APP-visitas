@@ -19,6 +19,7 @@ import { BotonPrimario, BotonSecundario, Card, PageHeader } from '../components/
 import Segmentado from '../components/Segmentado'
 import EncabezadoInformeVista from '../components/EncabezadoInformeVista'
 import { usePuenteInforme } from '../lib/agente/usePuenteInforme'
+import { confirmar } from '../lib/dialogo'
 
 const MAX_FOTOS_ACTIVIDADES = 6
 
@@ -116,8 +117,12 @@ export default function Reporte() {
 
   function regenerar() {
     if (!visita) return
-    if (!window.confirm('Esto vuelve a generar el informe automáticamente y descarta tus ediciones. ¿Continuar?')) return
-    generar(visita, actividades, pendientes, dia)
+    const v = visita
+    confirmar({ titulo: '¿Regenerar el informe?', mensaje: 'Vuelve a generarlo con los datos actuales y descarta tus ediciones.', aceptar: 'Regenerar' }).then(
+      (ok) => {
+        if (ok) generar(v, actividades, pendientes, dia)
+      },
+    )
   }
 
   function htmlFinal(): string | null {

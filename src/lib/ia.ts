@@ -1,4 +1,6 @@
 import { llamarGemini, textoDe, ErrorIA, type AvisoEstado } from './gemini'
+import { generarTextoClaude } from './claude'
+import { proveedorActivo } from './iaConfig'
 
 export { ErrorIA }
 
@@ -14,7 +16,10 @@ export interface MensajeIA {
   content: string
 }
 
+/** Redacción de un campo con el proveedor elegido en Ajustes (Gemini o Claude). */
 export async function generarTextoIA(historial: MensajeIA[], aviso?: AvisoEstado): Promise<string> {
+  if (proveedorActivo() === 'claude') return generarTextoClaude(PROMPT_SISTEMA, historial)
+
   const { contenido } = await llamarGemini(
     {
       contents: historial.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),

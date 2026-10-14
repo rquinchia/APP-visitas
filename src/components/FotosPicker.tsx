@@ -1,5 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Camera, Images } from 'lucide-react'
+import { confirmar } from '../lib/dialogo'
 import { eliminarFoto, guardarFoto, listarFotosPorEntidad } from '../db'
 import { generarId, ahoraISO } from '../lib/id'
 import type { EntidadFoto, Foto } from '../types'
@@ -94,7 +95,7 @@ export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta
   }
 
   async function borrar(id: string) {
-    if (!window.confirm('¿Eliminar esta foto?')) return
+    if (!(await confirmar({ titulo: '¿Eliminar esta foto?', aceptar: 'Eliminar', peligro: true }))) return
     try {
       await eliminarFoto(id)
       await cargar()

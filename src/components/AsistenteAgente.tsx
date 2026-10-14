@@ -5,7 +5,8 @@ import { ConversacionAgente } from '../lib/agente/agente'
 import { cargarDatosContexto, interpretarRuta, type Pantalla, type UbicacionApp } from '../lib/agente/contexto'
 import type { AccionRealizada, Pregunta } from '../lib/agente/herramientas'
 import { ErrorIA } from '../lib/gemini'
-import { hayClaveIA } from '../lib/iaConfig'
+import { NOMBRE_PROVEEDOR, elegirProveedor, proveedorActivo, tieneClave, type ProveedorIA } from '../lib/iaConfig'
+import { LogoProveedor } from './LogosIA'
 
 type Mensaje =
   | { id: number; tipo: 'usuario'; texto: string }
@@ -40,10 +41,12 @@ export default function AsistenteAgente() {
   const [aviso, setAviso] = useState('')
   const [planta, setPlanta] = useState('')
   const [seleccion, setSeleccion] = useState<string[]>([])
+  const [proveedor, setProveedor] = useState<ProveedorIA>(proveedorActivo)
   const finRef = useRef<HTMLDivElement>(null)
   const conversacion = useRef<ConversacionAgente>()
   if (!conversacion.current) {
     conversacion.current = new ConversacionAgente(
+      proveedor,
       () => ubicacionRef.current,
       (ruta) => {
         navigate(ruta)
@@ -55,7 +58,20 @@ export default function AsistenteAgente() {
   useEffect(() => {
     if (!abierto) return
     cargarDatosContexto(ubicacionRef.current).then((d) => setPlanta(d.visita?.planta || ''))
+    // Pudo cambiarse en Ajustes mientras el panel estaba cerrado.
+    const p = proveedorActivo()
+    if (p !== conversacion.current!.proveedor) cambiarProveedor(p)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abierto, location.pathname])
+
+  function cambiarProveedor(p: ProveedorIA) {
+    elegirProveedor(p)
+    setProveedor(p)
+    if (p === conversacion.current!.proveedor) return
+    conversacion.current!.reiniciar(p)
+    setSeleccion([])
+    setMensajes((prev) => (prev.length ? [{ id: siguienteId++, tipo: 'asistente', texto: `Cambié a **${NOMBRE_PROVEEDOR[p]}**. Empezamos una conversación nueva; los datos de la app siguen igual.` }] : prev))
+  }
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -101,11 +117,12 @@ export default function AsistenteAgente() {
   }
 
   function nuevaConversacion() {
-    conversacion.current!.reiniciar()
+    conversacion.current!.reiniciar(proveedor)
     setMensajes([])
     setSeleccion([])
   }
 
+  const conClave = tieneClave(proveedor)
   const sugerencias = SUGERENCIAS[ubicacionRef.current.pantalla] ?? SUGERENCIAS_GENERALES
   const preguntaAbierta = [...mensajes].reverse().find((m) => m.tipo === 'pregunta' && !m.respondida)
 
@@ -120,6 +137,9 @@ export default function AsistenteAgente() {
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)', right: 'max(16px, calc((100vw - 42rem) / 2 + 16px))' }}
         >
           <Sparkles className="h-6 w-6" strokeWidth={2.2} />
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow ring-2 ring-white">
+            <LogoProveedor proveedor={proveedor} className="h-4 w-4" />
+          </span>
         </button>
       )}
 
@@ -132,11 +152,11 @@ export default function AsistenteAgente() {
           >
             {/* Encabezado */}
             <div className="flex items-center gap-3 border-b border-slate-200/70 bg-white px-4 py-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-sky-500 text-white">
-                <Sparkles className="h-5 w-5" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 ring-1 ring-slate-200">
+                <LogoProveedor proveedor={proveedor} className="h-6 w-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-semibold text-slate-900">Asistente</p>
+                <p className="text-[15px] font-semibold text-slate-900">Asistente · {NOMBRE_PROVEEDOR[proveedor]}</p>
                 <p className="truncate text-[11px] text-slate-500">{planta ? `${planta} · ` : ''}actúa sobre lo que ves en pantalla</p>
               </div>
               {mensajes.length > 0 && (
@@ -149,11 +169,32 @@ export default function AsistenteAgente() {
               </button>
             </div>
 
+            {/* Elegir proveedor */}
+            <div className="flex gap-1.5 border-b border-slate-200/70 bg-white px-4 pb-2.5">
+              {(['gemini', 'claude'] as ProveedorIA[]).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  disabled={ocupado}
+                  onClick={() => cambiarProveedor(p)}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full border py-1.5 text-[13px] font-semibold transition-colors disabled:opacity-60 ${
+                    proveedor === p ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  <LogoProveedor proveedor={p} className="h-4 w-4" />
+                  {NOMBRE_PROVEEDOR[p]}
+                  {!tieneClave(p) && <span className={`text-[10px] font-medium ${proveedor === p ? 'text-slate-300' : 'text-slate-400'}`}>· sin clave</span>}
+                </button>
+              ))}
+            </div>
+
             {/* Mensajes */}
             <div className="flex-1 overflow-y-auto px-4 py-4">
-              {!hayClaveIA() ? (
-                <div className="rounded-2xl bg-white p-4 text-sm text-slate-600 shadow-sm">
-                  Para usar el asistente necesitas tu clave gratuita de Google Gemini.{' '}
+              {!conClave ? (
+                <div className="rounded-2xl bg-white p-4 text-sm leading-relaxed text-slate-600 shadow-sm">
+                  {proveedor === 'claude'
+                    ? 'Para usar Claude necesitas una clave de la API de Anthropic (console.anthropic.com, de pago por uso).'
+                    : 'Para usar Gemini necesitas tu clave gratuita de Google (aistudio.google.com).'}{' '}
                   <Link to="/ajustes" onClick={() => setAbierto(false)} className="font-semibold text-accent underline">
                     Configurarla en Ajustes
                   </Link>
@@ -269,7 +310,7 @@ export default function AsistenteAgente() {
             </div>
 
             {/* Entrada */}
-            {hayClaveIA() && (
+            {conClave && (
               <div className="border-t border-slate-200/70 bg-white px-3 py-2.5">
                 <div className="flex items-end gap-2 rounded-2xl bg-slate-100 py-1.5 pl-3.5 pr-1.5">
                   <textarea

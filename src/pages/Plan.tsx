@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { eliminarActividad, guardarActividad, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
+import { guardarActividad, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
+import { eliminarActividadConfirmando } from '../lib/eliminar'
 import { ahoraISO } from '../lib/id'
 import { registrarCambioPlan } from '../lib/historial'
 import { diaActual } from '../lib/progreso'
@@ -55,12 +56,14 @@ export default function Plan() {
 
   async function eliminar(actividad: Actividad) {
     if (!visita) return
-    if (!window.confirm(`¿Eliminar la actividad "${actividad.actividad}" (día ${actividad.dia})?`)) return
-    const actualizada = await registrarCambioPlan(visita, `Actividad eliminada (día ${actividad.dia}): ${actividad.actividad}`)
-    if (!actualizada) return
-    setVisita(actualizada)
-    await eliminarActividad(actividad.id)
-    await refrescar(visita.id)
+    try {
+      const actualizada = await eliminarActividadConfirmando(visita, actividad)
+      if (!actualizada) return
+      setVisita(actualizada)
+      await refrescar(visita.id)
+    } catch {
+      alert('No se pudo eliminar la actividad. Inténtalo de nuevo.')
+    }
   }
 
   async function duplicar(actividad: Actividad) {

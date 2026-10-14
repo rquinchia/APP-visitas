@@ -8,6 +8,8 @@ import { ETIQUETA_ESTADO_ACTIVIDAD, TIPOS_ACTIVIDAD_SUGERIDOS } from '../types'
 import AsistenteIA from '../components/AsistenteIA'
 import FotosPicker from '../components/FotosPicker'
 import { PageHeader } from '../components/ui'
+import { eliminarActividadConfirmando } from '../lib/eliminar'
+import { Trash2 } from 'lucide-react'
 
 const VACIA: Omit<Actividad, 'id' | 'visitaId' | 'creadoEn' | 'actualizadoEn'> = {
   dia: 1,
@@ -63,6 +65,18 @@ export default function ActividadForm() {
   if (cargando) return <p className="text-sm text-slate-500">Cargando…</p>
   if (!visita) return <p className="text-sm text-rose-600">Visita no encontrada.</p>
 
+  const volver = params.get('volver') || `/visitas/${visita.id}/plan?dia=${campos.dia}`
+
+  async function eliminar() {
+    if (!visita || !actividadOriginal) return
+    try {
+      const actualizada = await eliminarActividadConfirmando(visita, actividadOriginal)
+      if (actualizada) navigate(volver, { replace: true })
+    } catch {
+      alert('No se pudo eliminar la actividad. Inténtalo de nuevo.')
+    }
+  }
+
   function siguienteOrden(dia: number, excluirId?: string): number {
     const delDia = todasActividades.filter((a) => a.dia === dia && a.id !== excluirId)
     return delDia.length === 0 ? 1 : Math.max(...delDia.map((a) => a.orden)) + 1
@@ -103,7 +117,7 @@ export default function ActividadForm() {
         return
       }
       await guardarActividad(actividad)
-      navigate(`/visitas/${visita.id}/plan`)
+      navigate(volver)
     } catch {
       alert('No se pudo guardar la actividad en el dispositivo. Verifica el espacio disponible e inténtalo de nuevo.')
       setGuardando(false)
@@ -115,8 +129,8 @@ export default function ActividadForm() {
       <PageHeader
         titulo={esNueva ? 'Nueva actividad' : 'Editar actividad'}
         subtitulo={campos.emergente ? <span className="font-medium text-amber-600">⚡ Actividad emergente</span> : visita.planta}
-        atras={`/visitas/${visita.id}/plan`}
-        atrasEtiqueta="Plan"
+        atras={volver}
+        atrasEtiqueta="Volver"
       />
 
       <div className="grid grid-cols-2 gap-3">
@@ -203,6 +217,12 @@ export default function ActividadForm() {
       >
         {esNueva ? 'Crear actividad' : 'Guardar cambios'}
       </button>
+
+      {actividadOriginal && (
+        <button type="button" onClick={eliminar} className="flex items-center justify-center gap-2 py-2 text-sm font-medium text-rose-600">
+          <Trash2 className="h-4 w-4" /> Eliminar esta actividad
+        </button>
+      )}
     </form>
   )
 }

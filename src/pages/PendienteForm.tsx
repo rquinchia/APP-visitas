@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { CheckCircle2, ChevronDown, Plus, RotateCcw } from 'lucide-react'
-import { guardarPendiente, listarActividadesPorVisita, listarVisitas, obtenerPendiente } from '../db'
+import { CheckCircle2, ChevronDown, Plus, RotateCcw, Trash2 } from 'lucide-react'
+import { eliminarPendiente, guardarPendiente, listarActividadesPorVisita, listarVisitas, obtenerPendiente, siguienteNumeroHallazgo } from '../db'
 import { generarId, ahoraISO, hoyLocal, formatearFecha } from '../lib/id'
 import type { Actividad, CategoriaPendiente, EstadoPendiente, Pendiente, PrioridadPendiente, Visita } from '../types'
 import {
@@ -18,7 +18,8 @@ import {
 import FotosPicker from '../components/FotosPicker'
 import AsistenteIA from '../components/AsistenteIA'
 import { PageHeader } from '../components/ui'
-import { useDatosCambiados } from '../lib/eventos'
+import { avisarCambios, useDatosCambiados } from '../lib/eventos'
+import { confirmar } from '../lib/dialogo'
 
 const VACIO = {
   visitaId: '',
@@ -133,7 +134,7 @@ export default function PendienteForm() {
   const actividadSeleccionada = actividades.find((a) => a.id === campos.actividadId)
   const resuelto = campos.estado === 'CERRADO'
 
-  function construir(sobre: typeof campos): Pendiente {
+  function construir(sobre: typeof campos, numero: number | undefined): Pendiente {
     const ahora = ahoraISO()
     const visita = visitas.find((v) => v.id === sobre.visitaId)!
     return {
@@ -151,6 +152,7 @@ export default function PendienteForm() {
       fechaCompromiso: sobre.fechaCompromiso || FECHA_POR_DEFECTO,
       estado: sobre.estado,
       comentarios: sobre.comentarios.trim(),
+      numero,
       actividadId: sobre.actividadId || undefined,
       solucion: sobre.solucion.trim() || undefined,
       fechaSolucion: sobre.estado === 'CERRADO' ? (original?.fechaSolucion ?? hoyLocal()) : undefined,
@@ -161,8 +163,9 @@ export default function PendienteForm() {
 
   async function persistir(sobre = campos): Promise<boolean> {
     if (!sobre.visitaId || !sobre.descripcion.trim()) return false
-    const pendiente = construir(sobre)
     try {
+      const numero = original?.numero ?? (original ? undefined : await siguienteNumeroHallazgo(sobre.visitaId))
+      const pendiente = construir(sobre, numero)
       await guardarPendiente(pendiente)
       setOriginal(pendiente)
       return true
@@ -194,6 +197,24 @@ export default function PendienteForm() {
     setVerDespues(false)
     setCampos({ ...VACIO, visitaId: campos.visitaId, actividadId: campos.actividadId, equipo: campos.equipo })
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  async function eliminar() {
+    if (!original) return
+    const ok = await confirmar({
+      titulo: '¿Eliminar este hallazgo?',
+      mensaje: `«${original.descripcion}»\n\nSe eliminan también sus fotos y deja de aparecer en Pendientes y en los informes. Los demás hallazgos conservan su código.`,
+      aceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) return
+    try {
+      await eliminarPendiente(original.id)
+      avisarCambios([original.id])
+      navigate(volver, { replace: true })
+    } catch {
+      alert('No se pudo eliminar el hallazgo. Inténtalo de nuevo.')
+    }
   }
 
   async function marcarResuelto() {
@@ -480,6 +501,12 @@ export default function PendienteForm() {
       >
         {!pendienteId ? 'Guardar y terminar' : 'Guardar cambios'}
       </button>
+
+      {original && (
+        <button type="button" onClick={eliminar} className="mt-2 flex items-center justify-center gap-2 py-2 text-sm font-medium text-rose-600">
+          <Trash2 className="h-4 w-4" /> Eliminar este hallazgo
+        </button>
+      )}
     </form>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
-import { AlertCircle, Send, Zap } from 'lucide-react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { AlertCircle, Pencil, Send, Zap } from 'lucide-react'
 import { guardarActividad, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { Card, ListGroup, ListRow, PageHeader, SectionTitle } from '../components/ui'
 import { ahoraISO } from '../lib/id'
@@ -182,6 +182,13 @@ export default function RegistroDiario() {
                 </p>
                 {a.objetivo && <p className="mt-0.5 text-xs text-slate-500">{a.objetivo}</p>}
               </div>
+              <Link
+                to={`/visitas/${visita.id}/plan/${a.id}/editar?volver=${encodeURIComponent(volverAqui)}`}
+                aria-label="Editar actividad"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500"
+              >
+                <Pencil className="h-4 w-4" />
+              </Link>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-1.5">

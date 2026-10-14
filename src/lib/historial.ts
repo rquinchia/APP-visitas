@@ -1,6 +1,7 @@
 import { guardarVisita, registrarCambioHistorial } from '../db'
 import { generarId, ahoraISO } from './id'
 import { ORDEN_ESTADOS } from '../types'
+import { pedirTexto } from './dialogo'
 import type { Visita } from '../types'
 
 const UMBRAL_MOTIVO_OBLIGATORIO = ORDEN_ESTADOS.indexOf('APROBADO')
@@ -20,10 +21,13 @@ export async function registrarCambioPlan(visita: Visita, cambio: string): Promi
   let visitaActualizada = visita
 
   if (requiereMotivo) {
-    const respuesta = window.prompt(
-      `El plan de esta visita ya fue aprobado (versión ${visita.version}). Indica el motivo del cambio:\n\n"${cambio}"`,
-      '',
-    )
+    const respuesta = await pedirTexto({
+      titulo: 'Motivo del cambio',
+      mensaje: `El plan ya fue aprobado (versión ${visita.version}); este cambio crea la versión ${visita.version + 1}.\n\n«${cambio}»`,
+      placeholder: 'Ej. Ajuste solicitado por el cliente',
+      aceptar: 'Guardar cambio',
+      obligatorio: true,
+    })
     if (respuesta === null) return null
     motivo = respuesta
     visitaActualizada = { ...visita, version: visita.version + 1, actualizadoEn: ahoraISO() }

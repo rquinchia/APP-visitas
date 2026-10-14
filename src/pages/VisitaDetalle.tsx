@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { CalendarCheck, ClipboardList, FileText, Flag, ListTodo, Send, type LucideIcon } from 'lucide-react'
+import { CalendarCheck, ClipboardList, FileText, Flag, ListTodo, Pencil, Send, type LucideIcon } from 'lucide-react'
 import { guardarVisita, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { ahoraISO } from '../lib/id'
 import { useDatosCambiados } from '../lib/eventos'
@@ -196,10 +196,18 @@ export default function VisitaDetalle() {
         )}
       </div>
 
-      <SectionTitle>Datos de la visita</SectionTitle>
+      <div className="mb-1.5 mt-5 flex items-center justify-between px-1">
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">Datos de la visita</p>
+        <Link to={`/visitas/${visita.id}/editar`} className="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+          <Pencil className="h-3.5 w-3.5" /> Editar
+        </Link>
+      </div>
       <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-200/60">
+        <Fila etiqueta="Planta">{visita.planta || '—'}</Fila>
+        <Fila etiqueta="Cliente">{visita.cliente || '—'}</Fila>
         <Fila etiqueta="Objetivo">{visita.objetivo}</Fila>
         <Fila etiqueta="Responsable">{visita.responsable || '—'}</Fila>
+        <Fila etiqueta="Duración">{visita.duracionDias} días</Fila>
         <Fila etiqueta="Fecha de inicio">
           <input
             type="date"
