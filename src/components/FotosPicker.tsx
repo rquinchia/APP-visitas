@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
+import { Camera, Images } from 'lucide-react'
 import { eliminarFoto, guardarFoto, listarFotosPorEntidad } from '../db'
 import { generarId, ahoraISO } from '../lib/id'
 import type { EntidadFoto, Foto } from '../types'
@@ -111,10 +112,17 @@ export default function FotosPicker({ visitaId, entidadTipo, entidadId, etiqueta
             </button>
           </div>
         ))}
-        <label className="tap flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 text-slate-400">
-          <span className="text-xl">📷</span>
-          <span className="text-[10px]">Añadir</span>
-          <input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={onArchivos} />
+        {/* Dos entradas separadas: con `capture` el iPhone abre directo la cámara y no deja elegir
+            del álbum; sin `capture` muestra la fototeca (con selección múltiple). */}
+        <label className="tap flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-300 text-slate-500">
+          <Camera size={22} />
+          <span className="text-[10px]">Cámara</span>
+          <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onArchivos} />
+        </label>
+        <label className="tap flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-300 text-slate-500">
+          <Images size={22} />
+          <span className="text-[10px]">Álbum</span>
+          <input type="file" accept="image/*" multiple className="hidden" onChange={onArchivos} />
         </label>
       </div>
 

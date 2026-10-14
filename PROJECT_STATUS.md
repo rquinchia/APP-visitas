@@ -15,6 +15,15 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Fotos desde el álbum (2026-10-13)
+
+- **Bug**: en el iPhone no se podían cargar fotos de la fototeca, solo tomar una nueva. Causa:
+  el único `<input type="file">` de `FotosPicker` tenía `capture="environment"`, que en iOS abre
+  directamente la cámara sin ofrecer el álbum.
+- **Corrección**: `FotosPicker` muestra dos botones — **Cámara** (con `capture`, una foto) y
+  **Álbum** (sin `capture`, selección múltiple). Aplica en todos los lugares donde se adjuntan
+  fotos (actividades, registro diario y pendientes), porque todos usan el mismo componente.
+
 ## Rediseño tipo iOS + "Abrir en Outlook" (2026-09-26)
 
 - **Bug corregido**: el informe de Outlook aparecía vacío. Causa: el HTML se escribía en el
