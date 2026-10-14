@@ -1,22 +1,30 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { eliminarActividad, guardarActividad, listarActividadesPorVisita, obtenerVisita } from '../db'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { eliminarActividad, guardarActividad, listarActividadesPorVisita, listarPendientesPorVisita, obtenerVisita } from '../db'
 import { ahoraISO } from '../lib/id'
 import { registrarCambioPlan } from '../lib/historial'
 import { diaActual } from '../lib/progreso'
-import type { Actividad, EstadoActividad, Visita } from '../types'
+import { codigosHallazgos } from '../lib/hallazgos'
+import type { Actividad, EstadoActividad, Pendiente, Visita } from '../types'
 import { ETIQUETA_ESTADO_ACTIVIDAD } from '../types'
 import FotosPicker from '../components/FotosPicker'
+import HallazgosActividad from '../components/HallazgosActividad'
 import { ListGroup, ListRow, PageHeader } from '../components/ui'
 import { Eye, Plus, Zap } from 'lucide-react'
 
 export default function Plan() {
   const { id } = useParams<{ id: string }>()
+  const [params] = useSearchParams()
   const [visita, setVisita] = useState<Visita | null | undefined>(undefined)
   const [actividades, setActividades] = useState<Actividad[]>([])
+  const [hallazgos, setHallazgos] = useState<Pendiente[]>([])
+  const [cargado, setCargado] = useState(false)
 
   async function refrescar(visitaId: string) {
-    setActividades(await listarActividadesPorVisita(visitaId))
+    const [acts, pends] = await Promise.all([listarActividadesPorVisita(visitaId), listarPendientesPorVisita(visitaId)])
+    setActividades(acts)
+    setHallazgos(pends)
+    setCargado(true)
   }
 
   useEffect(() => {
@@ -24,6 +32,13 @@ export default function Plan() {
     obtenerVisita(id).then((v) => setVisita(v ?? null))
     refrescar(id)
   }, [id])
+
+  // Al volver de un hallazgo (?dia=N), regresar a la vista del mismo día.
+  useEffect(() => {
+    const dia = params.get('dia')
+    if (cargado && visita && dia) document.getElementById(`dia-${dia}`)?.scrollIntoView({ block: 'start' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cargado, visita])
 
   if (visita === undefined) return <p className="text-sm text-slate-500">Cargando…</p>
   if (visita === null) return <p className="text-sm text-rose-600">Visita no encontrada.</p>
@@ -122,6 +137,7 @@ export default function Plan() {
   const dias = Array.from({ length: visita.duracionDias }, (_, i) => i + 1)
   const diaHoy = diaActual(visita)
   const diaSugerido = diaHoy && diaHoy > 0 ? diaHoy : 1
+  const codigos = codigosHallazgos(hallazgos)
 
   return (
     <div className="flex flex-col gap-4">
@@ -153,7 +169,7 @@ export default function Plan() {
       {dias.map((dia) => {
         const delDia = actividades.filter((a) => a.dia === dia).sort((a, b) => a.orden - b.orden)
         return (
-          <section key={dia} className="rounded-2xl border border-slate-200/70 bg-white p-3 shadow-sm shadow-slate-200/60">
+          <section key={dia} id={`dia-${dia}`} className="scroll-mt-20 rounded-2xl border border-slate-200/70 bg-white p-3 shadow-sm shadow-slate-200/60">
             <div className="mb-2 flex items-center justify-between px-1">
               <h3 className="flex items-center gap-2 text-[15px] font-semibold text-slate-800">
                 <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-900 px-1.5 text-[11px] font-bold text-white">
@@ -165,7 +181,7 @@ export default function Plan() {
                 to={`/visitas/${visita.id}/plan/nueva?dia=${dia}`}
                 className="flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent"
               >
-                <Plus className="h-3.5 w-3.5" strokeWidth={3} /> Añadir
+                <Plus className="h-3.5 w-3.5" strokeWidth={3} /> Actividad
               </Link>
             </div>
 
@@ -215,8 +231,16 @@ export default function Plan() {
                   </select>
 
                   <div className="mt-2">
-                    <FotosPicker visitaId={visita.id} entidadTipo="ACTIVIDAD" entidadId={a.id} titulo="Fotos" />
+                    <FotosPicker visitaId={visita.id} entidadTipo="ACTIVIDAD" entidadId={a.id} titulo="Fotos de la actividad" />
                   </div>
+
+                  <HallazgosActividad
+                    visitaId={visita.id}
+                    actividadId={a.id}
+                    hallazgos={hallazgos.filter((h) => h.actividadId === a.id).sort((x, y) => x.creadoEn.localeCompare(y.creadoEn))}
+                    codigos={codigos}
+                    volver={`/visitas/${visita.id}/plan?dia=${dia}`}
+                  />
 
                   <div className="mt-2 flex gap-3 text-xs">
                     <Link to={`/visitas/${visita.id}/plan/${a.id}/editar`} className="font-medium text-accent">

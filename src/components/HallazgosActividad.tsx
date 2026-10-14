@@ -37,12 +37,14 @@ export default function HallazgosActividad({ visitaId, actividadId, hallazgos, c
           to={`/pendientes/nuevo?visitaId=${visitaId}&actividadId=${actividadId}&volver=${volverParam}`}
           className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-white"
         >
-          <Plus className="h-3.5 w-3.5" strokeWidth={3} /> Agregar
+          <Plus className="h-3.5 w-3.5" strokeWidth={3} /> Hallazgo
         </Link>
       </div>
 
       {hallazgos.length === 0 && (
-        <p className="px-0.5 text-[11px] text-slate-400">Registra cada observación con su foto; luego agrega la solución con la foto del después.</p>
+        <p className="px-0.5 text-[11px] text-slate-400">
+          Cada observación de esta actividad va aquí, con su foto. Puedes agregar varias seguidas; la solución (después) se completa cuando ocurra.
+        </p>
       )}
 
       <div className="flex flex-col gap-1.5">

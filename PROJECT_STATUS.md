@@ -15,6 +15,19 @@ Windows.
 - Vite + React + TypeScript, Tailwind CSS, `vite-plugin-pwa`, IndexedDB (`idb`).
 - Ver detalle completo y decisiones de entorno en [CLAUDE.md](CLAUDE.md).
 
+## Hallazgos también en el Plan + captura rápida (2026-10-13, feedback)
+
+El usuario no encontraba cómo cargar varias observaciones en el **Plan** (los hallazgos solo
+estaban en "Hoy", que aparece con la visita activa) y el "+ Añadir" del día le obligaba a crear una
+actividad completa. Corregido:
+- Cada actividad del Plan tiene su bloque de hallazgos (`HallazgosActividad`), igual que en Hoy.
+  Botones renombrados para no confundir: "+ Actividad" (por día) y "+ Hallazgo" (por actividad).
+- Formulario de hallazgo nuevo en **modo rápido**: solo descripción, equipo y fotos; "Clasificación
+  y plan de acción" y "Después" quedan plegados (se abren con un toque). Botón **"Guardar y agregar
+  otro hallazgo"** que limpia el formulario y conserva actividad y equipo, con contador de guardados.
+- Verificado en Edge headless: dos hallazgos seguidos desde una actividad del día 1 del Plan,
+  regreso al Plan en el mismo día, y ambos visibles con sus códigos.
+
 ## Hallazgos por actividad (antes/después) + informes ejecutivos (2026-10-13)
 
 Pedido del usuario: en una actividad como "Diagnóstico general" salen muchas observaciones; cada
